@@ -14,6 +14,7 @@
 * { margin:0; padding:0; box-sizing:border-box; }
 body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflow:hidden; }
 
+/* Changed to fixed and full screen by default */
 #executor {
   position:fixed; top:0; left:0;
   width:100vw; height:100vh;
@@ -23,10 +24,12 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
   transition: width 0.3s, height 0.3s, top 0.3s, left 0.3s;
 }
 
+/* Fix for dragging lag: disable transitions while dragging */
 #executor.dragging {
     transition: none !important;
 }
 
+/* Class for the "Small Window" mode */
 #executor.small-window {
     position: absolute;
     top: 50px;
@@ -40,7 +43,7 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
 .titlebar {
   background:#111; padding:10px 15px; font-weight:bold;
   display:flex; justify-content:space-between; 
-  cursor: default;
+  cursor: default; /* Keep cursor default */
   align-items: center;
   user-select: none;
 }
@@ -90,6 +93,7 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
 .tab-name { pointer-events:auto; }
 .delete { margin-left:6px; cursor:pointer; }
 
+/* Inline Rename Input Style */
 .tab-rename-input {
     background: #1e1e1e;
     border: 1px solid #3a86ff;
@@ -103,6 +107,7 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
 
 .main { display:flex; flex:1; position: relative; overflow: hidden; }
 
+/* Close Confirmation UI */
 #closeOverlay {
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100%;
@@ -124,6 +129,7 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
 .close-modal p { color: #888; margin-bottom: 20px; font-size: 14px; }
 .modal-btns { display: flex; gap: 10px; justify-content: center; }
 
+/* Settings Page View */
 #settingsView {
   position: absolute;
   top: 0; left: 0; width: 100%; height: 100%;
@@ -245,6 +251,7 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
 
 .left { flex:1; display:flex; flex-direction:column; overflow: hidden; }
 
+/* LINE NUMBERS STYLING - Updated for Ace */
 .editor-container {
   display: flex;
   flex: 1;
@@ -260,11 +267,26 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
   font-size:14px;
 }
 
-.ace_editor { background-color: #1e1e1e !important; }
-.ace_gutter { background: #1a1a1a !important; color: #555 !important; }
-.ace_active-line { background: #2a2a2a !important; }
+/* Custom Ace Theme Overrides for VS Dark Look */
+.ace_editor {
+    background-color: #1e1e1e !important;
+}
+.ace_gutter {
+    background: #1a1a1a !important;
+    color: #555 !important;
+}
+.ace_active-line {
+    background: #2a2a2a !important;
+}
+.ace_keyword { color: #569CD6 !important; }
+.ace_string { color: #CE9178 !important; }
+.ace_comment { color: #6A9955 !important; }
+.ace_function { color: #DCDCAA !important; }
+.ace_variable { color: #9CDCFE !important; }
+.ace_numeric { color: #B5CEA8 !important; }
 
 .controls { display:flex; gap:8px; padding:10px; background: #1e1e1e; }
+
 .controls button {
   background:#2d2d2d;
   border:none;
@@ -274,32 +296,84 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
   transition: all 0.2s ease;
 }
 
-#executeBtn { background: #3a86ff; font-weight: bold; padding: 5px 20px; border-radius: 4px; }
-#executeBtn:hover { background: #4a96ff; box-shadow: 0 0 8px rgba(58, 134, 255, 0.4); }
-
-.output {
-  height:80px; overflow:auto; padding:10px; font-size:13px;
-  background:#1e1e1e; border-top:1px solid #333; white-space:pre-wrap;
+/* Updated Execute Button Styles */
+#executeBtn {
+    background: #3a86ff;
+    font-weight: bold;
+    padding: 5px 20px;
+    border-radius: 4px;
+}
+#executeBtn:hover {
+    background: #4a96ff;
+    box-shadow: 0 0 8px rgba(58, 134, 255, 0.4);
+}
+#executeBtn:active {
+    transform: scale(0.92);
+    background: #2a76ef;
 }
 
-.sidebar { width:250px; background:#2d2d2d; padding:10px; }
-.search-bar input { width:100%; padding:5px; background:#1e1e1e; border:none; color:white; }
+.output {
+  height:80px;
+  overflow:auto;
+  padding:10px;
+  font-size:13px;
+  background:#1e1e1e;
+  border-top:1px solid #333;
+  white-space:pre-wrap;
+}
 
+.sidebar {
+  width:250px;
+  background:#2d2d2d;
+  padding:10px;
+}
+
+.search-bar input {
+  width:100%;
+  padding:5px;
+  background:#1e1e1e;
+  border:none;
+  color:white;
+}
+
+/* NOTIFICATION SYSTEM */
 #notification-container {
-    position: fixed; top: 20px; right: 20px; z-index: 9999;
-    display: flex; flex-direction: column; gap: 10px; pointer-events: none;
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
 }
 
 .notif {
-    background: #252525; color: white; padding: 12px 20px; border-radius: 6px;
-    border-left: 4px solid #3a86ff; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-    font-size: 13px; min-width: 200px; transform: translateX(120%);
+    background: #252525;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 6px;
+    border-left: 4px solid #3a86ff;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    font-size: 13px;
+    min-width: 200px;
+    transform: translateX(120%);
     transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    display: flex; align-items: center; justify-content: space-between;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
+
 .notif.show { transform: translateX(0); }
 
-.settings-checkbox { width: 18px; height: 18px; cursor: pointer; accent-color: #3a86ff; }
+/* Custom Styling for the Minimap toggle and inputs */
+.settings-checkbox {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #3a86ff;
+}
+
 </style>
 </head>
 
@@ -307,6 +381,7 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
 
 <div id="notification-container"></div>
 
+<!-- Custom Close Confirmation UI -->
 <div id="closeOverlay">
     <div class="close-modal">
         <h2>Close AWP.GG?</h2>
@@ -362,15 +437,10 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
                 <button id="copyBaseBtn" class="action-btn">Copy Script</button>
                 <button id="copyFullBtn" class="action-btn primary-btn">Copy Script with My ID</button>
             </div>
-            <!-- COOLDOWN INPUT PLACED UNDER COPY BUTTON AS REQUESTED -->
-            <div style="display: flex; align-items: center; gap: 15px; margin-top: 10px;">
-                <label style="font-size: 12px; color: #aaa;">Script Cooldown (s):</label>
-                <input type="number" id="cooldownInput" class="clean-input" value="2" step="0.5" style="width: 80px; padding: 5px 10px;">
-            </div>
-            <small style="color:#666; display:block; margin-top:10px; font-size:11px;">Paste the script with your ID into your Roblox executor.</small>
+            <small style="color:#666; display:block; margin-top:5px; font-size:11px;">Paste the script with your ID into your Roblox executor.</small>
         </div>
 
-        <div class="step-label">Notification & Editor Settings</div>
+        <div class="step-label">Editor & Script Settings</div>
         <div class="generator-section">
             <div style="display: flex; flex-direction: column; gap: 15px;">
                 <div style="display: flex; align-items: center; gap: 15px;">
@@ -378,8 +448,12 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
                     <input type="number" id="notifDelayInput" class="clean-input" value="1500" style="width: 100px; padding: 5px 10px;">
                 </div>
                 <div style="display: flex; align-items: center; gap: 15px;">
-                    <label style="font-size: 13px; color: #ccc;">Mini-map (Right Side):</label>
+                    <label style="font-size: 13px; color: #ccc;">Mini-map (Right):</label>
                     <input type="checkbox" id="minimapToggle" class="settings-checkbox" checked>
+                </div>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <label style="font-size: 13px; color: #ccc;">Script Cooldown (s):</label>
+                    <input type="number" id="cooldownInput" class="clean-input" value="2" step="0.5" style="width: 100px; padding: 5px 10px;">
                 </div>
             </div>
         </div>
@@ -448,6 +522,7 @@ sizeBtn.onclick = () => {
         executor.style.width = "950px";
         executor.style.height = "550px";
         sizeBtn.textContent = "▢";
+        sizeBtn.title = "Full Screen";
     } else {
         executor.classList.remove("small-window");
         executor.style.width = "100vw";
@@ -455,6 +530,7 @@ sizeBtn.onclick = () => {
         executor.style.top = "0";
         executor.style.left = "0";
         sizeBtn.textContent = "❐";
+        sizeBtn.title = "Small Window";
     }
     editor.resize();
 };
@@ -465,16 +541,33 @@ minBtn.onclick = () => {
     if (isMinimized) {
         itemsToHide.forEach(el => el.style.display = "none");
         executor.style.height = "auto";
+        if(isSmall) executor.style.minHeight = "0";
     } else {
         itemsToHide.forEach(el => el.style.display = "flex");
-        executor.style.height = isSmall ? "550px" : "100vh";
+        if (isSmall) {
+            executor.style.height = "550px";
+            executor.style.width = "950px";
+        } else {
+            executor.style.height = "100vh";
+            executor.style.width = "100vw";
+        }
     }
     editor.resize();
 };
 
-closeBtn.onclick = () => closeOverlay.style.display = "flex";
-document.getElementById("cancelClose").onclick = () => closeOverlay.style.display = "none";
-document.getElementById("confirmClose").onclick = () => window.close();
+closeBtn.onclick = () => {
+    closeOverlay.style.display = "flex";
+};
+
+document.getElementById("cancelClose").onclick = () => {
+    closeOverlay.style.display = "none";
+};
+
+document.getElementById("confirmClose").onclick = () => {
+    window.close();
+    notify("Please close the tab manually.");
+    closeOverlay.style.display = "none";
+};
 
 /* ---------- ACE EDITOR INITIALIZATION ---------- */
 const editor = ace.edit("editorBox");
@@ -490,64 +583,76 @@ editor.setOptions({
     useSoftTabs: true,
     tabSize: 4,
     showGutter: true,
-    minimap: { enabled: true }
+    minimap: { enabled: true } // Enable Minimap extension
 });
 
+/* Toggle Minimap from Settings */
 const minimapToggle = document.getElementById("minimapToggle");
-minimapToggle.onchange = () => editor.setOption("minimap", { enabled: minimapToggle.checked });
+minimapToggle.onchange = () => {
+    editor.setOption("minimap", { enabled: minimapToggle.checked });
+};
 
-/* ---------- FIXED AUTO-INDENTION LOGIC ---------- */
+/* ---------- AUTO-INDENTION LOGIC ---------- */
 
 function formatLuaCode() {
     const session = editor.getSession();
-    const currentVal = session.getValue();
-    if (!currentVal || currentVal.trim() === "") return; // Prevent clearing editor
-
     const cursor = editor.getCursorPosition();
     const lines = session.getLines(0, session.getLength() - 1);
     let indentLevel = 0;
-    const tab = "    ";
+    const tab = "    "; // 4 spaces
 
+    // Simple Lua block keywords
     const increaseRegex = /\b(then|do|repeat|function)\b|[\{\(\[]$/;
     const decreaseRegex = /^\s*(end|until|else|elseif|[\}\)\]])/;
     const middleRegex = /^\s*(else|elseif)\b/;
 
     const formattedLines = lines.map((line) => {
         let trimmed = line.trim();
-        if (decreaseRegex.test(trimmed)) indentLevel = Math.max(0, indentLevel - 1);
+        
+        // If the line starts with a closing keyword, decrease indent BEFORE printing line
+        if (decreaseRegex.test(trimmed)) {
+            indentLevel = Math.max(0, indentLevel - 1);
+        }
+
+        // Apply current indentation
         let newLine = tab.repeat(indentLevel) + trimmed;
-        if (middleRegex.test(trimmed) || increaseRegex.test(trimmed)) indentLevel++;
+
+        // If it was a middle keyword (else), increase it back for the next line
+        if (middleRegex.test(trimmed)) {
+            indentLevel++;
+        } 
+        // If line contains an opening keyword, increase for NEXT line
+        else if (increaseRegex.test(trimmed)) {
+            indentLevel++;
+        }
+
         return newLine;
     });
 
-    const finalCode = formattedLines.join("\n");
-    if (finalCode.trim() !== "") {
-        session.setValue(finalCode);
-        editor.moveCursorToPosition(cursor);
-    }
+    session.setValue(formattedLines.join("\n"));
+    editor.moveCursorToPosition(cursor);
 }
 
-// Safer paste handling to prevent code loss
+// 1. Auto-format on Paste
 editor.on("paste", (e) => {
-    // Give Ace a moment to finish the internal paste operation
-    setTimeout(() => {
-        const val = editor.getValue();
-        if (val && val.length > 0) formatLuaCode();
-    }, 100); 
+    setTimeout(formatLuaCode, 50);
 });
 
+// 2. Auto-correction when code is removed/changed
 let formatTimeout;
 editor.on("change", (e) => {
-    if (e.lines.length > 5 || e.action === "remove") {
+    // We only trigger auto-fix if a large chunk is deleted or added 
+    // to prevent jitter while typing single characters
+    if (e.lines.length > 1 || e.action === "remove") {
         clearTimeout(formatTimeout);
-        formatTimeout = setTimeout(() => {
-            if (editor.getValue().trim() !== "") formatLuaCode();
-        }, 3000); 
+        formatTimeout = setTimeout(formatLuaCode, 1500); // Wait for 1.5s of inactivity
     }
 });
 
+// 3. Manual Format Button
 document.getElementById("formatBtn").onclick = () => {
     formatLuaCode();
+    log("Manually corrected code indentation");
     notify("Code Formatted");
 };
 
@@ -586,7 +691,9 @@ function generateRandomString(length) {
 }
 
 genBtn.onclick = () => {
-    genDisplay.textContent = "DEV-" + generateRandomString(14);
+    const newId = "DEV-" + generateRandomString(14);
+    genDisplay.textContent = newId;
+    log("Generated new ID: " + newId);
     notify("New ID Generated");
 };
 
@@ -594,22 +701,26 @@ copyGenBtn.onclick = () => {
     const id = genDisplay.textContent;
     if(id.includes("XXXX")) return;
     navigator.clipboard.writeText(id);
+    log("ID copied to clipboard!");
     notify("ID Copied to Clipboard");
-    genDisplay.textContent = "DEV-XXXXXXXXXXXXXX"; // Reset on copy
+    // Reset back to placeholder after copy
+    genDisplay.textContent = "DEV-XXXXXXXXXXXXXX";
 };
 
 copyBaseBtn.onclick = () => {
-    const cd = cooldownInput.value || 2;
-    const script = LUA_TEMPLATE.replace("[[ID]]", "YOUR_ID_HERE").replace("[[COOLDOWN]]", cd);
+    const cdVal = cooldownInput.value || "2";
+    const script = LUA_TEMPLATE.replace("[[ID]]", "YOUR_ID_HERE").replace("[[COOLDOWN]]", cdVal);
     navigator.clipboard.writeText(script);
+    log("Base script copied!");
     notify("Base Script Copied");
 };
 
 copyFullBtn.onclick = () => {
     if(!realId) { notify("Error: Set Script ID first!"); return; }
-    const cd = cooldownInput.value || 2;
-    const script = LUA_TEMPLATE.replace("[[ID]]", realId).replace("[[COOLDOWN]]", cd);
+    const cdVal = cooldownInput.value || "2";
+    const script = LUA_TEMPLATE.replace("[[ID]]", realId).replace("[[COOLDOWN]]", cdVal);
     navigator.clipboard.writeText(script);
+    log("Script with ID copied!");
     notify("Script with ID Copied");
 };
 
@@ -626,8 +737,11 @@ function lockAndBlur() {
         scriptIdInput.value = generateRandomString(realId.length);
         scriptIdInput.classList.add("blurred");
         visibilityToggle.style.display = "block";
+        visibilityToggle.textContent = "Show";
+        settingHint.textContent = "ID Locked and Masked";
         isHidden = true;
         copyFullBtn.classList.add("ready-glow");
+        log("Device script id set and masked");
         notify("Script ID Locked");
     }
 }
@@ -636,16 +750,19 @@ visibilityToggle.onclick = () => {
     if(isHidden) {
         scriptIdInput.value = realId;
         scriptIdInput.classList.remove("blurred");
+        scriptIdInput.style.pointerEvents = "auto";
         visibilityToggle.textContent = "Hide";
         isHidden = false;
+        copyFullBtn.classList.remove("ready-glow");
     } else {
         lockAndBlur();
     }
 };
 
 scriptIdInput.onkeydown = e => { if(e.key === "Enter") { lockAndBlur(); scriptIdInput.blur(); } };
+scriptIdInput.onblur = () => { if(!isHidden && scriptIdInput.value.trim() !== "") lockAndBlur(); };
 
-/* ---------- DRAG ---------- */
+/* ---------- DRAG (FIXED LAG & CURSOR) ---------- */
 const dragBar = document.getElementById("dragBar");
 let drag=false, offX, offY;
 dragBar.onmousedown = e=>{
@@ -661,7 +778,10 @@ document.onmousemove = e=>{
     executor.style.top = (e.clientY - offY)+"px";
   }
 };
-document.onmouseup = ()=>{ drag=false; executor.classList.remove("dragging"); };
+document.onmouseup = ()=>{
+    drag=false;
+    executor.classList.remove("dragging");
+};
 
 /* ---------- TABS ---------- */
 const tabsContainer = document.getElementById("tabs");
@@ -684,27 +804,40 @@ function createTab(name="Untitled"){
   tab.innerHTML = `<span class="tab-name">${name}</span><span class="delete">✕</span>`;
   const nameSpan = tab.querySelector(".tab-name");
   const del = tab.querySelector(".delete");
-  tab.onclick = e=>{ if(e.target!==del) switchTab(id, tab); };
-  del.onclick = e=>{ e.stopPropagation(); deleteTab(id, tab); };
   
+  tab.onclick = e=>{ if(e.target!==del) switchTab(id, tab); };
+  del.onclick = e=>{ e.stopPropagation(); log(`Deleted tab '${nameSpan.textContent}'`); deleteTab(id, tab); };
+  
+  // Built-in Inline Renaming
   nameSpan.ondblclick = (e)=>{
     e.stopPropagation();
     const currentName = nameSpan.textContent;
     const input = document.createElement("input");
-    input.type = "text"; input.value = currentName; input.className = "tab-rename-input";
+    input.type = "text";
+    input.value = currentName;
+    input.className = "tab-rename-input";
+    
     nameSpan.replaceWith(input);
-    input.focus(); input.select();
+    input.focus();
+    input.select();
+
     const saveName = () => {
         const newName = input.value.trim() || "Untitled";
         input.replaceWith(nameSpan);
         nameSpan.textContent = newName;
+        if(newName !== currentName) {
+            log(`Renamed '${currentName}' to '${newName}'`);
+            notify(`Renamed to "${newName}"`);
+        }
     };
-    input.onkeydown = (ev) => { if(ev.key === "Enter") saveName(); };
+
+    input.onkeydown = (ev) => { if(ev.key === "Enter") saveName(); if(ev.key === "Escape") input.replaceWith(nameSpan); };
     input.onblur = saveName;
   };
 
   tabsContainer.appendChild(tab);
   switchTab(id, tab);
+  tabsContainer.scrollLeft = tabsContainer.scrollWidth;
 }
 
 function switchTab(id, el){
@@ -728,25 +861,39 @@ document.getElementById("executeBtn").onclick = async () => {
     const code = editor.getValue();
     const name = getTabName(currentTab);
     const API_BASE = "https://3ea5995c-1090-4c51-9fe6-82555a6f5b96-00-309xspfsl4afn.spock.replit.dev"; 
-    if (!realId) { notify("Error: Script ID not set!"); return; }
+    if (!realId) { log("Error: Script ID not set."); notify("Error: Script ID not set!"); return; }
     log(`Pushing '${name}' to Cloud...`);
+    notify("Sending code to cloud...");
     try {
         const response = await fetch(`${API_BASE}/api/update-code`, {
             method: "POST", headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ id: realId, script: code })
         });
-        if (response.ok) notify("Execute Success!");
-    } catch (err) { notify("Connection Failed"); }
+        if (response.ok) { log("Success: Code stored."); notify("Execute Success!"); } 
+        else { log(`Server Error: ${response.status}`); notify("Cloud Error: " + response.status); }
+    } catch (err) { log("Connection Error."); notify("Connection Failed"); }
 };
 
-document.getElementById("clearBtn").onclick = ()=>{ editor.setValue(""); notify("Editor Cleared"); };
+document.getElementById("clearBtn").onclick = ()=>{ editor.setValue(""); log(`Cleared current tab`); notify("Editor Cleared"); };
 document.getElementById("newTabBtn").onclick = ()=>createTab();
 document.getElementById("saveBtn").onclick = ()=>{
   const name = getTabName(currentTab) + ".lua";
   const blob = new Blob([editor.getValue()]);
   const a=document.createElement("a");
   a.href=URL.createObjectURL(blob); a.download=name; a.click();
-  notify("File Downloaded");
+  log(`Saved '${name}'`); notify("File Downloaded");
+};
+document.getElementById("openBtn").onclick = ()=>{
+  const input=document.createElement("input");
+  input.type="file";
+  input.onchange = e=>{
+    const file=e.target.files[0];
+    if(!file) return;
+    const reader=new FileReader();
+    reader.onload = ev=>{ createTab(file.name.replace(/\..+/,"")); editor.setValue(ev.target.result, -1); notify(`Opened ${file.name}`); };
+    reader.readAsText(file);
+  };
+  input.click();
 };
 
 createTab();
