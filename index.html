@@ -157,10 +157,15 @@ document.getElementById("executeBtn").addEventListener("click", ()=>{
 document.getElementById("newTabBtn").addEventListener("click", ()=>createTab());
 
 document.getElementById("saveBtn").addEventListener("click", ()=>{
+  if(!currentTab) return;
+  const tabEl = tabsContainer.querySelector(`.tab[data-tab="${currentTab}"]`);
+  const nameSpan = tabEl.querySelector(".tab-name");
+  const filename = (nameSpan.textContent || "script")+".lua";
+
   const blob = new Blob([editorBox.innerText], {type:"text/plain"});
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = (currentTab||"script")+".lua";
+  a.download = filename;
   a.click();
   URL.revokeObjectURL(a.href);
 });
