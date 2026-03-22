@@ -7,8 +7,6 @@
 
 <!-- ACE EDITOR LIBRARY -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.2/ace.js"></script>
-<!-- ACE BEAUTIFY EXTENSION -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.2/ext-beautify.js"></script>
 
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
@@ -566,22 +564,68 @@ editor.setOptions({
     tabSize: 4
 });
 
-/* ---------- AUTO INDENTION LOGIC ---------- */
-const beautify = ace.require("ace/ext/beautify");
-function autoIndentCode() {
-    beautify.beautify(editor.session);
+/* ---------- AUTO-INDENTION LOGIC ---------- */
+
+function formatLuaCode() {
+    const session = editor.getSession();
+    const cursor = editor.getCursorPosition();
+    const lines = session.getLines(0, session.getLength() - 1);
+    let indentLevel = 0;
+    const tab = "    "; // 4 spaces
+
+    // Simple Lua block keywords
+    const increaseRegex = /\b(then|do|repeat|function)\b|[\{\(\[]$/;
+    const decreaseRegex = /^\s*(end|until|else|elseif|[\}\)\]])/;
+    const middleRegex = /^\s*(else|elseif)\b/;
+
+    const formattedLines = lines.map((line) => {
+        let trimmed = line.trim();
+        
+        // If the line starts with a closing keyword, decrease indent BEFORE printing line
+        if (decreaseRegex.test(trimmed)) {
+            indentLevel = Math.max(0, indentLevel - 1);
+        }
+
+        // Apply current indentation
+        let newLine = tab.repeat(indentLevel) + trimmed;
+
+        // If it was a middle keyword (else), increase it back for the next line
+        if (middleRegex.test(trimmed)) {
+            indentLevel++;
+        } 
+        // If line contains an opening keyword, increase for NEXT line
+        else if (increaseRegex.test(trimmed)) {
+            indentLevel++;
+        }
+
+        return newLine;
+    });
+
+    session.setValue(formattedLines.join("\n"));
+    editor.moveCursorToPosition(cursor);
 }
 
-// Automatically format when code is pasted
-editor.on("paste", () => {
-    setTimeout(autoIndentCode, 50);
+// 1. Auto-format on Paste
+editor.on("paste", (e) => {
+    setTimeout(formatLuaCode, 50);
 });
 
-// Manual format button
+// 2. Auto-correction when code is removed/changed
+let formatTimeout;
+editor.on("change", (e) => {
+    // We only trigger auto-fix if a large chunk is deleted or added 
+    // to prevent jitter while typing single characters
+    if (e.lines.length > 1 || e.action === "remove") {
+        clearTimeout(formatTimeout);
+        formatTimeout = setTimeout(formatLuaCode, 1500); // Wait for 1.5s of inactivity
+    }
+});
+
+// 3. Manual Format Button
 document.getElementById("formatBtn").onclick = () => {
-    autoIndentCode();
-    log("Code manually formatted and indented");
-    notify("Indentation Corrected");
+    formatLuaCode();
+    log("Manually corrected code indentation");
+    notify("Code Formatted");
 };
 
 /* ---------- LOG SYSTEM ---------- */
