@@ -451,7 +451,6 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
       <div class="controls">
         <button id="executeBtn">Execute</button>
         <button id="clearBtn">Clear</button>
-        <button id="formatBtn">Format</button>
         <button id="openBtn">Open</button>
         <button id="saveBtn">Save</button>
         <button id="newTabBtn">+ Tab</button>
@@ -568,70 +567,6 @@ editor.setOptions({
     tabSize: 4
 });
 
-/* ---------- AUTO-INDENTION LOGIC ---------- */
-
-function formatLuaCode() {
-    const session = editor.getSession();
-    const cursor = editor.getCursorPosition();
-    const lines = session.getLines(0, session.getLength() - 1);
-    let indentLevel = 0;
-    const tab = "    "; // 4 spaces
-
-    // Simple Lua block keywords
-    const increaseRegex = /\b(then|do|repeat|function)\b|[\{\(\[]$/;
-    const decreaseRegex = /^\s*(end|until|else|elseif|[\}\)\]])/;
-    const middleRegex = /^\s*(else|elseif)\b/;
-
-    const formattedLines = lines.map((line) => {
-        let trimmed = line.trim();
-        
-        // If the line starts with a closing keyword, decrease indent BEFORE printing line
-        if (decreaseRegex.test(trimmed)) {
-            indentLevel = Math.max(0, indentLevel - 1);
-        }
-
-        // Apply current indentation
-        let newLine = tab.repeat(indentLevel) + trimmed;
-
-        // If it was a middle keyword (else), increase it back for the next line
-        if (middleRegex.test(trimmed)) {
-            indentLevel++;
-        } 
-        // If line contains an opening keyword, increase for NEXT line
-        else if (increaseRegex.test(trimmed)) {
-            indentLevel++;
-        }
-
-        return newLine;
-    });
-
-    session.setValue(formattedLines.join("\n"));
-    editor.moveCursorToPosition(cursor);
-}
-
-// 1. Auto-format on Paste
-editor.on("paste", (e) => {
-    setTimeout(formatLuaCode, 50);
-});
-
-// 2. Auto-correction when code is removed/changed
-let formatTimeout;
-editor.on("change", (e) => {
-    // We only trigger auto-fix if a large chunk is deleted or added 
-    // to prevent jitter while typing single characters
-    if (e.lines.length > 1 || e.action === "remove") {
-        clearTimeout(formatTimeout);
-        formatTimeout = setTimeout(formatLuaCode, 1500); // Wait for 1.5s of inactivity
-    }
-});
-
-// 3. Manual Format Button
-document.getElementById("formatBtn").onclick = () => {
-    formatLuaCode();
-    log("Manually corrected code indentation");
-    notify("Code Formatted");
-};
-
 /* ---------- LOG SYSTEM ---------- */
 const output = document.getElementById("output");
 function log(msg){
@@ -679,7 +614,6 @@ copyGenBtn.onclick = () => {
     navigator.clipboard.writeText(id);
     log("ID copied to clipboard!");
     notify("ID Copied to Clipboard");
-    // RESET DISPLAY BACK TO DEFAULT
     genDisplay.textContent = "DEV-XXXXXXXXXXXXXX";
 };
 
