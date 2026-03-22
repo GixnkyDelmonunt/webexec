@@ -61,23 +61,41 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
   z-index: 10;
   display: none;
   flex-direction: column;
-  padding: 40px;
+  padding: 30px 40px;
   overflow-y: auto;
 }
 
 .settings-header { font-size: 20px; margin-bottom: 5px; color: #3a86ff; font-weight: bold; }
-.settings-sub { font-size: 12px; color: #888; margin-bottom: 20px; }
+.settings-sub { font-size: 12px; color: #888; margin-bottom: 25px; }
+
+.step-label {
+    font-size: 14px;
+    font-weight: bold;
+    color: #ccc;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+}
+.step-label::before {
+    content: "";
+    display: inline-block;
+    width: 4px;
+    height: 14px;
+    background: #3a86ff;
+    margin-right: 8px;
+    border-radius: 2px;
+}
 
 .generator-section, .copy-section {
     background: #252525;
     padding: 15px;
     border-radius: 5px;
     border: 1px solid #333;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
     width: 450px;
 }
 
-.gen-controls, .copy-controls { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+.gen-controls, .copy-controls { display: flex; gap: 10px; margin-bottom: 5px; }
 .gen-display { 
     background: #111; 
     padding: 8px; 
@@ -94,6 +112,7 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
     flex-direction: column; 
     gap: 10px; 
     width: 450px; 
+    margin-bottom: 25px;
 }
 
 .input-wrapper {
@@ -111,37 +130,21 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
   font-family: Consolas, monospace;
   outline: none;
   border-radius: 4px;
-  transition: filter 0.2s ease;
 }
 
-.blurred {
-    filter: blur(5px);
-    user-select: none;
-    pointer-events: none; 
-}
-
+.blurred { filter: blur(5px); user-select: none; pointer-events: none; }
 .clean-input:focus { border-color: #3a86ff; }
 
 .toggle-btn {
-    position: absolute;
-    right: 5px;
-    background: #3a86ff;
-    border: none;
-    color: white;
-    padding: 4px 8px;
-    font-size: 11px;
-    cursor: pointer;
-    border-radius: 3px;
-    text-transform: uppercase;
+    position: absolute; right: 5px;
+    background: #3a86ff; border: none; color: white;
+    padding: 4px 8px; font-size: 11px; cursor: pointer;
+    border-radius: 3px; text-transform: uppercase;
 }
 
 .action-btn {
-    background: #3c3c3c;
-    border: none;
-    color: white;
-    padding: 8px 15px;
-    cursor: pointer;
-    font-size: 12px;
+    background: #3c3c3c; border: none; color: white;
+    padding: 8px 15px; cursor: pointer; font-size: 12px;
     border-radius: 4px;
 }
 .action-btn:hover { background: #444; }
@@ -149,51 +152,21 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
 .primary-btn:hover { background: #2a76ef; }
 
 .left { flex:1; display:flex; flex-direction:column; }
-
 #editorBox {
-  flex:1;
-  padding:10px;
-  background:#1e1e1e;
-  outline:none;
-  overflow:auto;
-  white-space:pre;
-  font-size:14px;
-  line-height:1.5;
+  flex:1; padding:10px; background:#1e1e1e; outline:none;
+  overflow:auto; white-space:pre; font-size:14px; line-height:1.5;
 }
 
 .controls { display:flex; gap:8px; padding:10px; }
-
-.controls button {
-  background:#2d2d2d;
-  border:none;
-  color:white;
-  padding:5px 10px;
-  cursor:pointer;
-}
+.controls button { background:#2d2d2d; border:none; color:white; padding:5px 10px; cursor:pointer; }
 
 .output {
-  height:80px;
-  overflow:auto;
-  padding:10px;
-  font-size:13px;
-  background:#1e1e1e;
-  border-top:1px solid #333;
-  white-space:pre-wrap;
+  height:80px; overflow:auto; padding:10px; font-size:13px;
+  background:#1e1e1e; border-top:1px solid #333; white-space:pre-wrap;
 }
 
-.sidebar {
-  width:250px;
-  background:#2d2d2d;
-  padding:10px;
-}
-
-.search-bar input {
-  width:100%;
-  padding:5px;
-  background:#1e1e1e;
-  border:none;
-  color:white;
-}
+.sidebar { width:250px; background:#2d2d2d; padding:10px; }
+.search-bar input { width:100%; padding:5px; background:#1e1e1e; border:none; color:white; }
 
 </style>
 </head>
@@ -210,9 +183,10 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
 
   <div class="main">
     <div id="settingsView">
-        <div class="settings-header">Device Script ID</div>
-        <div class="settings-sub">Create a Unique Device ID then paste into roblox script then back to here and set</div>
+        <div class="settings-header">Setup Guide</div>
+        <div class="settings-sub">Follow these steps to link your Roblox game to the cloud:</div>
         
+        <div class="step-label">1. Generate your Unique ID</div>
         <div class="generator-section">
             <div class="gen-controls">
                 <div id="genDisplay" class="gen-display">DEV-XXXXXXXXXXXXXX</div>
@@ -221,27 +195,26 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
             </div>
         </div>
 
+        <div class="step-label">2. Set & Lock your ID</div>
         <div class="input-group">
             <div class="input-wrapper">
-                <input type="text" id="scriptIdInput" class="clean-input" placeholder="Paste ID here to set...">
+                <input type="text" id="scriptIdInput" class="clean-input" placeholder="Paste ID here and press Enter...">
                 <button id="visibilityToggle" class="toggle-btn" style="display:none;">Show</button>
             </div>
-            <small id="settingHint" style="color:#888; margin-bottom: 20px;">Press Enter to lock and mask</small>
+            <small id="settingHint" style="color:#888">Press Enter to lock ID</small>
         </div>
 
-        <div class="settings-header">Loader Script</div>
-        <div class="settings-sub">Copy the Roblox listener script below</div>
+        <div class="step-label">3. Copy Script to Executor</div>
         <div class="copy-section">
             <div class="copy-controls">
-                <button id="copyBaseBtn" class="action-btn">Copy Script</button>
-                <button id="copyFullBtn" class="action-btn primary-btn">Copy Script with ID</button>
+                <button id="copyFullBtn" class="action-btn primary-btn" style="width:100%">Copy Script with My ID</button>
             </div>
+            <small style="color:#666; font-size:11px;">Paste into your Roblox executor and run.</small>
         </div>
     </div>
 
     <div class="left">
       <div id="editorBox" contenteditable="true">-- Welcome to AWP.GG!</div>
-
       <div class="controls">
         <button id="executeBtn">Execute</button>
         <button id="clearBtn">Clear</button>
@@ -249,30 +222,24 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
         <button id="saveBtn">Save</button>
         <button id="newTabBtn">+ Tab</button>
       </div>
-
       <div id="output" class="output"></div>
     </div>
 
     <div class="sidebar">
-      <div class="search-bar">
-        <input placeholder="Search...">
-      </div>
+      <div class="search-bar"><input placeholder="Search..."></div>
     </div>
   </div>
 </div>
 
 <script>
-
-/* ---------- LOG SYSTEM ---------- */
 const output = document.getElementById("output");
-
 function log(msg){
   const t = new Date().toLocaleTimeString('en-US',{hour12:false});
   output.textContent += `[${t}] ${msg}\n`;
   output.scrollTop = output.scrollHeight;
 }
 
-/* ---------- SETTINGS & LOGIC ---------- */
+/* ---------- SETTINGS & SCRIPT LOGIC ---------- */
 const settingsBtn = document.getElementById("settingsBtn");
 const settingsView = document.getElementById("settingsView");
 const scriptIdInput = document.getElementById("scriptIdInput");
@@ -281,8 +248,6 @@ const settingHint = document.getElementById("settingHint");
 const genBtn = document.getElementById("genBtn");
 const copyGenBtn = document.getElementById("copyGenBtn");
 const genDisplay = document.getElementById("genDisplay");
-
-const copyBaseBtn = document.getElementById("copyBaseBtn");
 const copyFullBtn = document.getElementById("copyFullBtn");
 
 let realId = "";
@@ -294,9 +259,7 @@ const LUA_TEMPLATE = `local a="[[ID]]"local b="https://3ea5995c-1090-4c51-9fe6-8
 function generateRandomString(length) {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     let result = "";
-    for (let i = 0; i < length; i++) {
-        result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
+    for (let i = 0; i < length; i++) result += chars.charAt(Math.floor(Math.random() * chars.length));
     return result;
 }
 
@@ -310,26 +273,15 @@ copyGenBtn.onclick = () => {
     const id = genDisplay.textContent;
     if(id.includes("XXXX")) return;
     navigator.clipboard.writeText(id);
-    log("ID copied to clipboard!");
-};
-
-// SCRIPT COPYING LOGIC
-copyBaseBtn.onclick = () => {
-    const script = LUA_TEMPLATE.replace("[[ID]]", "YOUR_ID_HERE");
-    navigator.clipboard.writeText(script);
-    log("Base script copied!");
-    alert("Copied base script to clipboard!");
+    log("ID copied!");
 };
 
 copyFullBtn.onclick = () => {
-    if(!realId) {
-        alert("Please set a Device Script ID first!");
-        return;
-    }
+    if(!realId) { alert("Please set a Device Script ID first!"); return; }
     const script = LUA_TEMPLATE.replace("[[ID]]", realId);
     navigator.clipboard.writeText(script);
-    log("Script with ID copied!");
-    alert("Copied script with ID: " + realId);
+    log("Full script with ID copied!");
+    alert("Script copied! Paste it into your Roblox executor.");
 };
 
 settingsBtn.onclick = () => {
@@ -348,7 +300,7 @@ function lockAndBlur() {
         visibilityToggle.textContent = "Show";
         settingHint.textContent = "ID Locked and Masked";
         isHidden = true;
-        log("Device script id set and masked");
+        log("ID set and locked.");
     }
 }
 
@@ -356,162 +308,67 @@ visibilityToggle.onclick = () => {
     if(isHidden) {
         scriptIdInput.value = realId;
         scriptIdInput.classList.remove("blurred");
-        scriptIdInput.style.pointerEvents = "auto";
         visibilityToggle.textContent = "Hide";
         isHidden = false;
-    } else {
-        lockAndBlur();
-    }
+    } else { lockAndBlur(); }
 };
 
-scriptIdInput.onkeydown = e => {
-    if(e.key === "Enter") {
-        lockAndBlur();
-        scriptIdInput.blur();
-    }
-};
+scriptIdInput.onkeydown = e => { if(e.key === "Enter") { lockAndBlur(); scriptIdInput.blur(); } };
 
-scriptIdInput.onblur = () => {
-    if(!isHidden && scriptIdInput.value.trim() !== "") {
-        lockAndBlur();
-    }
-};
-
-/* ---------- DRAG ---------- */
-const dragBar = document.getElementById("dragBar");
-const executor = document.getElementById("executor");
+/* ---------- DRAG & TABS ---------- */
+const dragBar = document.getElementById("dragBar"), executor = document.getElementById("executor");
 let drag=false, offX, offY;
-
-dragBar.onmousedown = e=>{
-  if(e.target === settingsBtn) return;
-  drag=true;
-  offX = e.clientX - executor.offsetLeft;
-  offY = e.clientY - executor.offsetTop;
-};
-document.onmousemove = e=>{
-  if(drag){
-    executor.style.left = (e.clientX - offX)+"px";
-    executor.style.top = (e.clientY - offY)+"px";
-  }
-};
+dragBar.onmousedown = e=>{ if(e.target===settingsBtn) return; drag=true; offX=e.clientX-executor.offsetLeft; offY=e.clientY-executor.offsetTop; };
+document.onmousemove = e=>{ if(drag){ executor.style.left=(e.clientX-offX)+"px"; executor.style.top=(e.clientY-offY)+"px"; } };
 document.onmouseup = ()=>drag=false;
 
-/* ---------- TABS ---------- */
-const tabsContainer = document.getElementById("tabs");
-const editorBox = document.getElementById("editorBox");
-let tabsData = {};
-let currentTab = null;
-let tabCount = 0;
-
-function getTabName(id){
-  const el = tabsContainer.querySelector(`[data-tab="${id}"]`);
-  return el?.querySelector(".tab-name").textContent || "script";
-}
+const tabsContainer = document.getElementById("tabs"), editorBox = document.getElementById("editorBox");
+let tabsData = {}, currentTab = null, tabCount = 0;
 
 function createTab(name="Untitled"){
-  tabCount++;
-  const id="tab"+tabCount;
-  tabsData[id]="";
-  const tab=document.createElement("div");
-  tab.className="tab";
-  tab.dataset.tab=id;
+  tabCount++; const id="tab"+tabCount; tabsData[id]="";
+  const tab=document.createElement("div"); tab.className="tab"; tab.dataset.tab=id;
   tab.innerHTML = `<span class="tab-name">${name}</span><span class="delete">✕</span>`;
-  const nameSpan = tab.querySelector(".tab-name");
   const del = tab.querySelector(".delete");
   tab.onclick = e=>{ if(e.target!==del) switchTab(id, tab); };
-  del.onclick = e=>{ e.stopPropagation(); log(`Deleted tab '${nameSpan.textContent}'`); deleteTab(id, tab); };
-  nameSpan.ondblclick = ()=>{
-    const old=nameSpan.textContent;
-    const n=prompt("Rename tab:", old);
-    if(n){ nameSpan.textContent=n; log(`Renamed '${old}' to '${n}'`); }
-  };
-  tabsContainer.appendChild(tab);
-  switchTab(id, tab);
-  tabsContainer.scrollLeft = tabsContainer.scrollWidth;
-  log(`Created tab '${name}'`);
+  del.onclick = e=>{ e.stopPropagation(); deleteTab(id, tab); };
+  tabsContainer.appendChild(tab); switchTab(id, tab);
 }
 
 function switchTab(id, el){
   if(currentTab) tabsData[currentTab]=editorBox.innerText;
   currentTab=id;
   document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
-  el.classList.add("active");
-  editorBox.innerText = tabsData[id] || "";
+  el.classList.add("active"); editorBox.innerText = tabsData[id] || "";
 }
 
 function deleteTab(id, el){
   if(Object.keys(tabsData).length<=1) return;
-  delete tabsData[id];
-  el.remove();
-  const next = tabsContainer.querySelector(".tab");
-  if(next) switchTab(next.dataset.tab,next);
+  delete tabsData[id]; el.remove();
+  const next = tabsContainer.querySelector(".tab"); if(next) switchTab(next.dataset.tab,next);
 }
 
-/* ---------- BUTTONS ---------- */
+/* ---------- API EXECUTION ---------- */
 document.getElementById("executeBtn").onclick = async () => {
     const code = editorBox.innerText;
-    const name = getTabName(currentTab);
     const API_BASE = "https://3ea5995c-1090-4c51-9fe6-82555a6f5b96-00-309xspfsl4afn.spock.replit.dev"; 
-
-    if (!realId) {
-        log("Error: Device Script ID not set in Settings.");
-        return;
-    }
-
-    log(`Pushing '${name}' to Cloud...`);
-
+    if (!realId) { log("Error: Set ID in Settings."); return; }
+    log(`Pushing code...`);
     try {
         const response = await fetch(`${API_BASE}/api/update-code`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
+            method: "POST", headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ id: realId, script: code })
         });
-
-        if (response.ok) {
-            log("Success: Code stored in Database.");
-        } else {
-            const errText = await response.text();
-            log(`Server Error: ${response.status} - ${errText}`);
-        }
-    } catch (err) {
-        log("Connection Error: Check if server is online.");
-    }
+        if (response.ok) log("Success: Code stored.");
+        else log("Server Error: " + response.status);
+    } catch (err) { log("Connection Error."); }
 };
 
-document.getElementById("clearBtn").onclick = ()=>{
-  editorBox.innerText="";
-  log(`Cleared '${getTabName(currentTab)}'`);
-};
+document.getElementById("clearBtn").onclick = ()=>{ editorBox.innerText=""; log("Cleared editor."); };
 document.getElementById("newTabBtn").onclick = ()=>createTab();
-document.getElementById("saveBtn").onclick = ()=>{
-  const name = getTabName(currentTab) + ".lua";
-  const blob = new Blob([editorBox.innerText]);
-  const a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  a.download=name;
-  a.click();
-  log(`Saved '${name}'`);
-};
-document.getElementById("openBtn").onclick = ()=>{
-  const input=document.createElement("input");
-  input.type="file";
-  input.onchange = e=>{
-    const file=e.target.files[0];
-    if(!file) return;
-    const reader=new FileReader();
-    reader.onload = ev=>{
-      createTab(file.name.replace(/\..+/,""));
-      editorBox.innerText = ev.target.result;
-      log(`Opened '${file.name}'`);
-    };
-    reader.readAsText(file);
-  };
-  input.click();
-};
 
 createTab();
 log("Executor started");
-
 </script>
 </body>
 </html>
