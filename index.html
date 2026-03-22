@@ -92,15 +92,36 @@ let tabsData = {}, currentTab=null, tabCount=0;
 
 function createTab(name="Untitled") {
   tabCount++;
-  const id="tab"+tabCount; tabsData[id]="";
-  const tab = document.createElement("div"); tab.className="tab"; tab.dataset.tab=id;
-  tab.innerHTML=name+' <span>✕</span>'; tabsContainer.appendChild(tab);
+  const id="tab"+tabCount; 
+  tabsData[id]="";
   
-  function selectTab(){ switchTab(id, tab); }
-  tab.addEventListener("click", e=>{ if(e.target.tagName!=="SPAN") selectTab(); });
-  
-  tab.querySelector("span").addEventListener("click", e=>{ e.stopPropagation(); deleteTab(id, tab); });
-  
+  const tab = document.createElement("div"); 
+  tab.className="tab"; 
+  tab.dataset.tab=id;
+  tab.innerHTML='<span class="tab-name">'+name+'</span> <span class="delete">✕</span>'; 
+  tabsContainer.appendChild(tab);
+
+  const nameSpan = tab.querySelector(".tab-name");
+  const deleteSpan = tab.querySelector(".delete");
+
+  // select tab
+  tab.addEventListener("click", e=>{
+    if(e.target!==deleteSpan) switchTab(id, tab);
+  });
+
+  // delete tab
+  deleteSpan.addEventListener("click", e=>{
+    e.stopPropagation();
+    deleteTab(id, tab);
+  });
+
+  // rename tab on double click
+  nameSpan.addEventListener("dblclick", e=>{
+    e.stopPropagation();
+    const newName = prompt("Enter new tab name:", nameSpan.textContent);
+    if(newName) nameSpan.textContent = newName;
+  });
+
   switchTab(id, tab);
   updateTabsScroll();
 }
