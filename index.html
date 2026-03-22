@@ -167,7 +167,6 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
 .primary-btn { background: #3a86ff; }
 .primary-btn:hover { background: #2a76ef; }
 
-/* GLOW EFFECT FOR STEP 3 */
 .ready-glow {
     box-shadow: 0 0 15px rgba(58, 134, 255, 0.6);
     border: 1px solid #3a86ff;
@@ -185,33 +184,31 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
 }
 
 #lineNumbers {
-  width: 45px;
+  width: 50px;
   background: #1a1a1a;
   color: #555;
-  padding: 15px 10px;
+  padding: 15px 10px 15px 0;
   text-align: right;
   font-size: 14px;
-  line-height: 1.5;
+  line-height: 1.5; /* MUST MATCH EDITORBOX */
   user-select: none;
   border-right: 1px solid #333;
   overflow: hidden;
   pointer-events: none;
 }
 
-/* UPDATED EDITORBOX FOR SCROLLING */
 #editorBox {
   flex:1;
   padding:15px;
   background:#1e1e1e;
   outline:none;
-  overflow: auto; /* Enables scrollbars */
-  white-space: pre; /* Keeps Lua formatting */
+  overflow: auto;
+  white-space: pre; 
   font-size:14px;
-  line-height:1.5;
+  line-height:1.5; /* MUST MATCH LINENUMBERS */
   tab-size: 4;
 }
 
-/* Custom Scrollbar Styling */
 #editorBox::-webkit-scrollbar { width: 10px; height: 10px; }
 #editorBox::-webkit-scrollbar-track { background: #111; }
 #editorBox::-webkit-scrollbar-thumb { background: #333; border-radius: 5px; }
@@ -299,7 +296,7 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
 
     <div class="left">
       <div class="editor-container">
-        <div id="lineNumbers">1</div>
+        <div id="lineNumbers"><div>1</div></div>
         <div id="editorBox" contenteditable="true" spellcheck="false">-- Welcome to AWP.GG!</div>
       </div>
 
@@ -340,8 +337,8 @@ const editorBox = document.getElementById("editorBox");
 function updateLineNumbers() {
   let content = editorBox.innerText;
   
-  // Browsers add a phantom \n at the end of innerText. 
-  // If it ends with a newline, we slice it off to get the actual line count.
+  // Chromium browsers add a phantom \n at the end of innerText in contenteditables.
+  // We strip ONLY the very last character if it's a newline to prevent "Ghost Lines".
   if (content.endsWith('\n')) {
     content = content.slice(0, -1);
   }
@@ -351,21 +348,24 @@ function updateLineNumbers() {
   
   let lineHtml = '';
   for (let i = 1; i <= count; i++) {
-    lineHtml += i + '<br>';
+    lineHtml += '<div>' + i + '</div>';
   }
   lineNumbers.innerHTML = lineHtml;
 }
 
-// Sync scrolling and content
+// Sync scrolling
 editorBox.addEventListener('scroll', () => {
   lineNumbers.scrollTop = editorBox.scrollTop;
 });
 
+// Update on input and handle rapid Enter key presses
 editorBox.addEventListener('input', updateLineNumbers);
-
-// Use timeout to catch the state after the Enter key has modified the DOM
-editorBox.addEventListener('keydown', () => {
-  setTimeout(updateLineNumbers, 0);
+editorBox.addEventListener('keydown', (e) => {
+    if (e.key === "Tab") {
+        e.preventDefault();
+        document.execCommand("insertText", false, "\t");
+    }
+    setTimeout(updateLineNumbers, 0);
 });
 
 /* ---------- SETTINGS & LOGIC ---------- */
@@ -441,8 +441,6 @@ function lockAndBlur() {
         visibilityToggle.textContent = "Show";
         settingHint.textContent = "ID Locked and Masked";
         isHidden = true;
-        
-        // Add Glow to Step 3
         copyFullBtn.classList.add("ready-glow");
         log("Device script id set and masked");
     }
@@ -608,6 +606,7 @@ document.getElementById("openBtn").onclick = ()=>{
 };
 
 createTab();
+updateLineNumbers();
 log("Executor started");
 
 </script>
