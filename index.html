@@ -23,7 +23,6 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
   align-items: center;
 }
 
-/* Settings Icon Style */
 .settings-toggle {
   cursor: pointer;
   font-size: 18px;
@@ -48,7 +47,6 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
 }
 
 .tab.active { background:#3a86ff; }
-
 .tab-name { pointer-events:auto; }
 .delete { margin-left:6px; cursor:pointer; }
 
@@ -60,14 +58,15 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
   top: 0; left: 0; width: 100%; height: 100%;
   background: #1e1e1e;
   z-index: 10;
-  display: none; /* Hidden by default */
+  display: none;
   flex-direction: column;
   padding: 40px;
+  gap: 30px;
 }
 
-.settings-header { font-size: 20px; margin-bottom: 20px; color: #3a86ff; font-weight: bold; }
+.settings-header { font-size: 20px; color: #3a86ff; font-weight: bold; margin-bottom: 5px; }
 
-.input-group { display: flex; flex-direction: column; gap: 10px; width: 300px; }
+.input-group { display: flex; flex-direction: column; gap: 10px; width: 400px; }
 
 .clean-input {
   background: #2d2d2d;
@@ -79,6 +78,40 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
   border-radius: 4px;
 }
 .clean-input:focus { border-color: #3a86ff; }
+
+/* Blur Logic */
+.blurred-container {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.blurred-text {
+    filter: blur(5px);
+    transition: filter 0.3s;
+    background: #2d2d2d;
+    padding: 8px;
+    border-radius: 4px;
+    user-select: none;
+    flex: 1;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.blurred-text.visible {
+    filter: blur(0);
+    user-select: text;
+}
+
+.reveal-btn {
+    background: #3a86ff;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 12px;
+    border-radius: 3px;
+}
 
 .left { flex:1; display:flex; flex-direction:column; }
 
@@ -94,7 +127,6 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
 }
 
 .controls { display:flex; gap:8px; padding:10px; }
-
 .controls button {
   background:#2d2d2d;
   border:none;
@@ -142,11 +174,24 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
 
   <div class="main">
     <div id="settingsView">
-        <div class="settings-header">Device Script ID</div>
-        <div class="input-group">
-            <input type="text" id="scriptIdInput" class="clean-input" placeholder="Enter ID (e.g. A1-X99-BT)...">
-            <small style="color:#888">Press Enter to save changes</small>
-        </div>
+        <section>
+            <div class="settings-header">Device Script ID</div>
+            <div class="input-group">
+                <input type="text" id="scriptIdInput" class="clean-input" placeholder="Paste ID here...">
+                <small style="color:#888">Press Enter to set</small>
+            </div>
+        </section>
+
+        <section>
+            <div class="settings-header">Secret Key (Randomized)</div>
+            <div class="input-group">
+                <div class="blurred-container">
+                    <div id="secretKey" class="blurred-text">000000000000</div>
+                    <button class="reveal-btn" id="revealBtn">Show/Hide</button>
+                </div>
+                <small style="color:#888">Unique session key for this device</small>
+            </div>
+        </section>
     </div>
 
     <div class="left">
@@ -182,17 +227,36 @@ function log(msg){
   output.scrollTop = output.scrollHeight;
 }
 
-/* ---------- SETTINGS LOGIC ---------- */
+/* ---------- SETTINGS & RANDOM STRING ---------- */
 const settingsBtn = document.getElementById("settingsBtn");
 const settingsView = document.getElementById("settingsView");
 const scriptIdInput = document.getElementById("scriptIdInput");
+const secretKeyEl = document.getElementById("secretKey");
+const revealBtn = document.getElementById("revealBtn");
 let isSettingsOpen = false;
+
+// Generate Random String (different from ID)
+function generateRandomString(length) {
+    const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+}
+
+// Set initial random key
+secretKeyEl.textContent = generateRandomString(16);
 
 settingsBtn.onclick = () => {
     isSettingsOpen = !isSettingsOpen;
     settingsView.style.display = isSettingsOpen ? "flex" : "none";
     settingsBtn.textContent = isSettingsOpen ? "✕" : "⚙";
     if(isSettingsOpen) log("Opened Settings");
+};
+
+revealBtn.onclick = () => {
+    secretKeyEl.classList.toggle('visible');
 };
 
 function saveScriptId() {
@@ -202,27 +266,16 @@ function saveScriptId() {
     }
 }
 
-// Save on Enter
-scriptIdInput.onkeydown = e => {
-    if(e.key === "Enter") {
-        saveScriptId();
-        scriptIdInput.blur(); // Trigger blur to show it's "set"
-    }
-};
-
-// Save on Click Away (Blur)
-scriptIdInput.onblur = () => {
-    saveScriptId();
-};
+scriptIdInput.onkeydown = e => { if(e.key === "Enter") { saveScriptId(); scriptIdInput.blur(); } };
+scriptIdInput.onblur = () => { saveScriptId(); };
 
 /* ---------- DRAG ---------- */
 const dragBar = document.getElementById("dragBar");
 const executor = document.getElementById("executor");
-
 let drag=false, offX, offY;
 
 dragBar.onmousedown = e=>{
-  if(e.target === settingsBtn) return; // Don't drag if clicking gear
+  if(e.target === settingsBtn) return;
   drag=true;
   offX = e.clientX - executor.offsetLeft;
   offY = e.clientY - executor.offsetTop;
@@ -234,13 +287,11 @@ document.onmousemove = e=>{
     executor.style.top = (e.clientY - offY)+"px";
   }
 };
-
 document.onmouseup = ()=>drag=false;
 
 /* ---------- TABS ---------- */
 const tabsContainer = document.getElementById("tabs");
 const editorBox = document.getElementById("editorBox");
-
 let tabsData = {};
 let currentTab = null;
 let tabCount = 0;
@@ -254,98 +305,59 @@ function createTab(name="Untitled"){
   tabCount++;
   const id="tab"+tabCount;
   tabsData[id]="";
-
   const tab=document.createElement("div");
   tab.className="tab";
   tab.dataset.tab=id;
-
   tab.innerHTML = `<span class="tab-name">${name}</span><span class="delete">✕</span>`;
-
   const nameSpan = tab.querySelector(".tab-name");
   const del = tab.querySelector(".delete");
-
-  tab.onclick = e=>{
-    if(e.target!==del) switchTab(id, tab);
-  };
-
-  del.onclick = e=>{
-    e.stopPropagation();
-    log(`Deleted tab '${nameSpan.textContent}'`);
-    deleteTab(id, tab);
-  };
-
+  tab.onclick = e=>{ if(e.target!==del) switchTab(id, tab); };
+  del.onclick = e=>{ e.stopPropagation(); log(`Deleted tab '${nameSpan.textContent}'`); deleteTab(id, tab); };
   nameSpan.ondblclick = ()=>{
     const old=nameSpan.textContent;
     const n=prompt("Rename tab:", old);
-    if(n){
-      nameSpan.textContent=n;
-      log(`Renamed '${old}' to '${n}'`);
-    }
+    if(n){ nameSpan.textContent=n; log(`Renamed '${old}' to '${n}'`); }
   };
-
   tabsContainer.appendChild(tab);
   switchTab(id, tab);
   tabsContainer.scrollLeft = tabsContainer.scrollWidth;
-
-  log(`Created tab '${name}'`);
 }
 
 function switchTab(id, el){
   if(currentTab) tabsData[currentTab]=editorBox.innerText;
   currentTab=id;
-
   document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
   el.classList.add("active");
-
   editorBox.innerText = tabsData[id] || "";
 }
 
 function deleteTab(id, el){
   if(Object.keys(tabsData).length<=1) return;
-
   delete tabsData[id];
   el.remove();
-
   const next = tabsContainer.querySelector(".tab");
   if(next) switchTab(next.dataset.tab,next);
 }
 
 /* ---------- BUTTONS ---------- */
-
-document.getElementById("executeBtn").onclick = ()=>{
-  const name = getTabName(currentTab);
-  log(`Executed '${name}'`);
-  alert("Executed!");
-};
-
-document.getElementById("clearBtn").onclick = ()=>{
-  editorBox.innerText="";
-  log(`Cleared '${getTabName(currentTab)}'`);
-};
-
+document.getElementById("executeBtn").onclick = ()=>{ log(`Executed '${getTabName(currentTab)}'`); alert("Executed!"); };
+document.getElementById("clearBtn").onclick = ()=>{ editorBox.innerText=""; log(`Cleared '${getTabName(currentTab)}'`); };
 document.getElementById("newTabBtn").onclick = ()=>createTab();
-
 document.getElementById("saveBtn").onclick = ()=>{
   const name = getTabName(currentTab);
-  const file = name + ".lua";
-
   const blob = new Blob([editorBox.innerText]);
   const a=document.createElement("a");
   a.href=URL.createObjectURL(blob);
-  a.download=file;
+  a.download=name + ".lua";
   a.click();
-
-  log(`Saved '${file}'`);
+  log(`Saved '${name}.lua'`);
 };
-
 document.getElementById("openBtn").onclick = ()=>{
   const input=document.createElement("input");
   input.type="file";
-
   input.onchange = e=>{
     const file=e.target.files[0];
     if(!file) return;
-
     const reader=new FileReader();
     reader.onload = ev=>{
       createTab(file.name.replace(/\..+/,""));
@@ -354,15 +366,11 @@ document.getElementById("openBtn").onclick = ()=>{
     };
     reader.readAsText(file);
   };
-
   input.click();
 };
 
 /* ---------- INIT ---------- */
 createTab();
-createTab();
-createTab();
-
 log("Executor started");
 
 </script>
