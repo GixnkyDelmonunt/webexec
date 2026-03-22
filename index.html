@@ -19,7 +19,13 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
 
 .titlebar {
   background:#111; padding:10px 15px; font-weight:bold;
-  display:flex; justify-content:space-between; cursor:move;
+  display:flex; justify-content:space-between; align-items:center;
+  cursor:move;
+}
+
+.settings-btn {
+  cursor:pointer;
+  font-size:16px;
 }
 
 .tabs {
@@ -91,35 +97,76 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
   color:white;
 }
 
+/* SETTINGS PAGE */
+#settingsPage {
+  display:none;
+  flex:1;
+  justify-content:center;
+  align-items:center;
+  flex-direction:column;
+  gap:20px;
+}
+
+.settings-box {
+  background:#2d2d2d;
+  padding:20px;
+  border-radius:8px;
+  width:300px;
+}
+
+.settings-box h2 {
+  margin-bottom:10px;
+}
+
+.settings-box input {
+  width:100%;
+  padding:8px;
+  background:#1e1e1e;
+  border:none;
+  color:white;
+}
 </style>
 </head>
 
 <body>
 
 <div id="executor">
-  <div class="titlebar" id="dragBar">AWP.GG</div>
+  <div class="titlebar" id="dragBar">
+    AWP.GG
+    <span class="settings-btn" id="settingsBtn">⚙️</span>
+  </div>
 
-  <div class="tabs" id="tabs"></div>
+  <div id="mainUI">
+    <div class="tabs" id="tabs"></div>
 
-  <div class="main">
-    <div class="left">
-      <div id="editorBox" contenteditable="true">-- Welcome to AWP.GG!</div>
+    <div class="main">
+      <div class="left">
+        <div id="editorBox" contenteditable="true">-- Welcome to AWP.GG!</div>
 
-      <div class="controls">
-        <button id="executeBtn">Execute</button>
-        <button id="clearBtn">Clear</button>
-        <button id="openBtn">Open</button>
-        <button id="saveBtn">Save</button>
-        <button id="newTabBtn">+ Tab</button>
+        <div class="controls">
+          <button id="executeBtn">Execute</button>
+          <button id="clearBtn">Clear</button>
+          <button id="openBtn">Open</button>
+          <button id="saveBtn">Save</button>
+          <button id="newTabBtn">+ Tab</button>
+        </div>
+
+        <div id="output" class="output"></div>
       </div>
 
-      <div id="output" class="output"></div>
+      <div class="sidebar">
+        <div class="search-bar">
+          <input placeholder="Search...">
+        </div>
+      </div>
     </div>
+  </div>
 
-    <div class="sidebar">
-      <div class="search-bar">
-        <input placeholder="Search...">
-      </div>
+  <!-- SETTINGS PAGE -->
+  <div id="settingsPage">
+    <div class="settings-box">
+      <h2>Device Script ID</h2>
+      <input id="deviceIdInput" placeholder="Enter ID...">
     </div>
   </div>
 </div>
@@ -134,6 +181,49 @@ function log(msg){
   output.textContent += `[${t}] ${msg}\n`;
   output.scrollTop = output.scrollHeight;
 }
+
+/* ---------- SETTINGS ---------- */
+const settingsBtn = document.getElementById("settingsBtn");
+const settingsPage = document.getElementById("settingsPage");
+const mainUI = document.getElementById("mainUI");
+const deviceInput = document.getElementById("deviceIdInput");
+
+let deviceId = "";
+
+settingsBtn.onclick = ()=>{
+  if(settingsPage.style.display === "flex"){
+    settingsPage.style.display = "none";
+    mainUI.style.display = "block";
+  } else {
+    settingsPage.style.display = "flex";
+    mainUI.style.display = "none";
+  }
+};
+
+function setDeviceId(val){
+  if(!val) return;
+
+  if(deviceId === ""){
+    log(`Device Script ID set to '${val}'`);
+  } else {
+    log(`Device Script ID changed to '${val}'`);
+  }
+
+  deviceId = val;
+}
+
+// enter key
+deviceInput.addEventListener("keydown", e=>{
+  if(e.key === "Enter"){
+    setDeviceId(deviceInput.value.trim());
+    deviceInput.blur();
+  }
+});
+
+// click away
+deviceInput.addEventListener("blur", ()=>{
+  setDeviceId(deviceInput.value.trim());
+});
 
 /* ---------- DRAG ---------- */
 const dragBar = document.getElementById("dragBar");
