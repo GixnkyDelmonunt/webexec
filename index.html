@@ -41,7 +41,7 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
 .titlebar {
   background:#111; padding:10px 15px; font-weight:bold;
   display:flex; justify-content:space-between; 
-  cursor: default; /* Changed from move to default */
+  cursor: default; /* Keep cursor default */
   align-items: center;
   user-select: none;
 }
@@ -498,11 +498,12 @@ sizeBtn.onclick = () => {
     isSmall = !isSmall;
     if (isSmall) {
         executor.classList.add("small-window");
+        executor.style.width = "950px";
+        executor.style.height = "550px";
         sizeBtn.textContent = "▢";
         sizeBtn.title = "Full Screen";
     } else {
         executor.classList.remove("small-window");
-        // Reset manual style overrides so CSS classes can take over
         executor.style.width = "100vw";
         executor.style.height = "100vh";
         executor.style.top = "0";
@@ -521,9 +522,8 @@ minBtn.onclick = () => {
         executor.style.height = "auto";
         if(isSmall) executor.style.minHeight = "0";
     } else {
-        itemsToHide.forEach(el => el.style.display = (el === tabsList ? "flex" : "flex"));
+        itemsToHide.forEach(el => el.style.display = "flex");
         if (isSmall) {
-            // Fix: ensure the height goes back to exact small window size
             executor.style.height = "550px";
             executor.style.width = "950px";
         } else {
@@ -544,7 +544,6 @@ document.getElementById("cancelClose").onclick = () => {
 
 document.getElementById("confirmClose").onclick = () => {
     window.close();
-    // Fallback if browser blocks self-close
     notify("Please close the tab manually.");
     closeOverlay.style.display = "none";
 };
@@ -665,13 +664,13 @@ visibilityToggle.onclick = () => {
 scriptIdInput.onkeydown = e => { if(e.key === "Enter") { lockAndBlur(); scriptIdInput.blur(); } };
 scriptIdInput.onblur = () => { if(!isHidden && scriptIdInput.value.trim() !== "") lockAndBlur(); };
 
-/* ---------- DRAG (Fixed Lag & Cursor) ---------- */
+/* ---------- DRAG (FIXED LAG & CURSOR) ---------- */
 const dragBar = document.getElementById("dragBar");
 let drag=false, offX, offY;
 dragBar.onmousedown = e=>{
   if(!isSmall || e.target.closest('.win-btn') || e.target === settingsBtn) return;
   drag=true;
-  executor.classList.add("dragging"); // Disables transition during movement
+  executor.classList.add("dragging");
   offX = e.clientX - executor.offsetLeft;
   offY = e.clientY - executor.offsetTop;
 };
@@ -711,7 +710,7 @@ function createTab(name="Untitled"){
   tab.onclick = e=>{ if(e.target!==del) switchTab(id, tab); };
   del.onclick = e=>{ e.stopPropagation(); log(`Deleted tab '${nameSpan.textContent}'`); deleteTab(id, tab); };
   
-  // Inline rename logic (built-in, no alert/prompt)
+  // Built-in Inline Renaming
   nameSpan.ondblclick = (e)=>{
     e.stopPropagation();
     const currentName = nameSpan.textContent;
