@@ -12,19 +12,50 @@
 * { margin:0; padding:0; box-sizing:border-box; }
 body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflow:hidden; }
 
+/* Changed to fixed and full screen by default */
 #executor {
-  position:absolute; top:50px; left:50px;
-  width:950px; height:550px;
+  position:fixed; top:0; left:0;
+  width:100vw; height:100vh;
   background:#1e1e1e; border:1px solid #333;
   display:flex; flex-direction:column;
-  resize:both; overflow:hidden;
+  z-index: 1;
+  transition: width 0.3s, height 0.3s, top 0.3s, left 0.3s;
+}
+
+/* Class for the "Small Window" mode */
+#executor.small-window {
+    position: absolute;
+    top: 50px;
+    left: 50px;
+    width: 950px;
+    height: 550px;
+    resize: both;
+    overflow: hidden;
 }
 
 .titlebar {
   background:#111; padding:10px 15px; font-weight:bold;
   display:flex; justify-content:space-between; cursor:move;
   align-items: center;
+  user-select: none;
 }
+
+.title-left { display: flex; align-items: center; gap: 15px; }
+
+.window-controls {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.win-btn {
+    cursor: pointer;
+    font-size: 16px;
+    color: #888;
+    transition: color 0.2s;
+}
+.win-btn:hover { color: white; }
+#closeBtn:hover { color: #ff4d4d; }
 
 .settings-toggle {
   cursor: pointer;
@@ -55,6 +86,28 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
 .delete { margin-left:6px; cursor:pointer; }
 
 .main { display:flex; flex:1; position: relative; overflow: hidden; }
+
+/* Close Confirmation UI */
+#closeOverlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8);
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+.close-modal {
+    background: #1e1e1e;
+    border: 1px solid #333;
+    padding: 30px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+.close-modal h2 { margin-bottom: 10px; font-size: 18px; }
+.close-modal p { color: #888; margin-bottom: 20px; font-size: 14px; }
+.modal-btns { display: flex; gap: 10px; justify-content: center; }
 
 /* Settings Page View */
 #settingsView {
@@ -300,15 +353,34 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
 
 <div id="notification-container"></div>
 
+<!-- Custom Close Confirmation UI -->
+<div id="closeOverlay">
+    <div class="close-modal">
+        <h2>Close AWP.GG?</h2>
+        <p>Any unsaved code changes will be lost.</p>
+        <div class="modal-btns">
+            <button class="action-btn primary-btn" id="confirmClose">Close Tab</button>
+            <button class="action-btn" id="cancelClose">Cancel</button>
+        </div>
+    </div>
+</div>
+
 <div id="executor">
   <div class="titlebar" id="dragBar">
-    <span>AWP.GG</span>
-    <span class="settings-toggle" id="settingsBtn">⚙</span>
+    <div class="title-left">
+        <span>AWP.GG</span>
+        <span class="settings-toggle" id="settingsBtn">⚙</span>
+    </div>
+    <div class="window-controls">
+        <span class="win-btn" id="minBtn" title="Minimize">─</span>
+        <span class="win-btn" id="sizeBtn" title="Small Window">❐</span>
+        <span class="win-btn" id="closeBtn" title="Close">✕</span>
+    </div>
   </div>
 
   <div class="tabs" id="tabs"></div>
 
-  <div class="main">
+  <div class="main" id="mainWindow">
     <div id="settingsView">
         <div class="settings-header">Setup Guide</div>
         <div class="settings-sub">Follow these steps to link your Roblox game to the cloud:</div>
@@ -351,7 +423,6 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
 
     <div class="left">
       <div class="editor-container">
-        <!-- Ace handles line numbers automatically -->
         <div id="editorBox">-- Welcome to AWP.GG!</div>
       </div>
 
@@ -385,21 +456,79 @@ function notify(message) {
     n.className = "notif";
     n.innerHTML = `<span>${message}</span>`;
     notifContainer.appendChild(n);
-    
-    // Trigger slide-in
     setTimeout(() => n.classList.add("show"), 10);
-    
     const delay = parseInt(notifDelayInput.value) || 1500;
-    
     setTimeout(() => {
         n.classList.remove("show");
         setTimeout(() => n.remove(), 300);
     }, delay);
 }
 
+/* ---------- WINDOW CONTROLS ---------- */
+const executor = document.getElementById("executor");
+const sizeBtn = document.getElementById("sizeBtn");
+const minBtn = document.getElementById("minBtn");
+const closeBtn = document.getElementById("closeBtn");
+const mainWindow = document.getElementById("mainWindow");
+const tabsList = document.getElementById("tabs");
+const closeOverlay = document.getElementById("closeOverlay");
+
+let isSmall = false;
+let isMinimized = false;
+
+sizeBtn.onclick = () => {
+    isSmall = !isSmall;
+    if (isSmall) {
+        executor.classList.add("small-window");
+        sizeBtn.textContent = "▢";
+        sizeBtn.title = "Full Screen";
+    } else {
+        executor.classList.remove("small-window");
+        executor.style.width = "100vw";
+        executor.style.height = "100vh";
+        executor.style.top = "0";
+        executor.style.left = "0";
+        sizeBtn.textContent = "❐";
+        sizeBtn.title = "Small Window";
+    }
+    editor.resize();
+};
+
+minBtn.onclick = () => {
+    isMinimized = !isMinimized;
+    const itemsToHide = [tabsList, mainWindow];
+    if (isMinimized) {
+        itemsToHide.forEach(el => el.style.display = "none");
+        executor.style.height = "auto";
+        if(isSmall) executor.style.minHeight = "0";
+    } else {
+        itemsToHide.forEach(el => el.style.display = (el === tabsList ? "flex" : "flex"));
+        if (isSmall) {
+            executor.style.height = "550px";
+        } else {
+            executor.style.height = "100vh";
+        }
+    }
+};
+
+closeBtn.onclick = () => {
+    closeOverlay.style.display = "flex";
+};
+
+document.getElementById("cancelClose").onclick = () => {
+    closeOverlay.style.display = "none";
+};
+
+document.getElementById("confirmClose").onclick = () => {
+    window.close();
+    // Fallback if browser blocks self-close
+    notify("Please close the tab manually.");
+    closeOverlay.style.display = "none";
+};
+
 /* ---------- ACE EDITOR INITIALIZATION ---------- */
 const editor = ace.edit("editorBox");
-editor.setTheme("ace/theme/monokai"); // We use Monokai and override it with CSS for VS Dark
+editor.setTheme("ace/theme/monokai");
 editor.session.setMode("ace/mode/lua");
 editor.setOptions({
     fontFamily: "Consolas, monospace",
@@ -414,7 +543,6 @@ editor.setOptions({
 
 /* ---------- LOG SYSTEM ---------- */
 const output = document.getElementById("output");
-
 function log(msg){
   const t = new Date().toLocaleTimeString('en-US',{hour12:false});
   output.textContent += `[${t}] ${msg}\n`;
@@ -430,7 +558,6 @@ const settingHint = document.getElementById("settingHint");
 const genBtn = document.getElementById("genBtn");
 const copyGenBtn = document.getElementById("copyGenBtn");
 const genDisplay = document.getElementById("genDisplay");
-
 const copyBaseBtn = document.getElementById("copyBaseBtn");
 const copyFullBtn = document.getElementById("copyFullBtn");
 
@@ -443,9 +570,7 @@ const LUA_TEMPLATE = `local a="[[ID]]"local b="https://3ea5995c-1090-4c51-9fe6-8
 function generateRandomString(length) {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     let result = "";
-    for (let i = 0; i < length; i++) {
-        result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
+    for (let i = 0; i < length; i++) { result += chars.charAt(Math.floor(Math.random() * chars.length)); }
     return result;
 }
 
@@ -472,10 +597,7 @@ copyBaseBtn.onclick = () => {
 };
 
 copyFullBtn.onclick = () => {
-    if(!realId) {
-        notify("Error: Set Script ID first!");
-        return;
-    }
+    if(!realId) { notify("Error: Set Script ID first!"); return; }
     const script = LUA_TEMPLATE.replace("[[ID]]", realId);
     navigator.clipboard.writeText(script);
     log("Script with ID copied!");
@@ -517,32 +639,20 @@ visibilityToggle.onclick = () => {
     }
 };
 
-scriptIdInput.onkeydown = e => {
-    if(e.key === "Enter") {
-        lockAndBlur();
-        scriptIdInput.blur();
-    }
-};
-
-scriptIdInput.onblur = () => {
-    if(!isHidden && scriptIdInput.value.trim() !== "") {
-        lockAndBlur();
-    }
-};
+scriptIdInput.onkeydown = e => { if(e.key === "Enter") { lockAndBlur(); scriptIdInput.blur(); } };
+scriptIdInput.onblur = () => { if(!isHidden && scriptIdInput.value.trim() !== "") lockAndBlur(); };
 
 /* ---------- DRAG ---------- */
 const dragBar = document.getElementById("dragBar");
-const executor = document.getElementById("executor");
 let drag=false, offX, offY;
-
 dragBar.onmousedown = e=>{
-  if(e.target === settingsBtn) return;
+  if(!isSmall || e.target.closest('.win-btn') || e.target === settingsBtn) return;
   drag=true;
   offX = e.clientX - executor.offsetLeft;
   offY = e.clientY - executor.offsetTop;
 };
 document.onmousemove = e=>{
-  if(drag){
+  if(drag && isSmall){
     executor.style.left = (e.clientX - offX)+"px";
     executor.style.top = (e.clientY - offY)+"px";
   }
@@ -575,11 +685,7 @@ function createTab(name="Untitled"){
   nameSpan.ondblclick = ()=>{
     const old=nameSpan.textContent;
     const n=prompt("Rename tab:", old);
-    if(n){ 
-        nameSpan.textContent=n; 
-        log(`Renamed '${old}' to '${n}'`); 
-        notify(`Renamed to "${n}"`);
-    }
+    if(n){ nameSpan.textContent=n; log(`Renamed '${old}' to '${n}'`); notify(`Renamed to "${n}"`); }
   };
   tabsContainer.appendChild(tab);
   switchTab(id, tab);
@@ -591,7 +697,7 @@ function switchTab(id, el){
   currentTab=id;
   document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
   el.classList.add("active");
-  editor.setValue(tabsData[id] || "", -1); // -1 moves cursor to start
+  editor.setValue(tabsData[id] || "", -1);
 }
 
 function deleteTab(id, el){
@@ -607,52 +713,27 @@ document.getElementById("executeBtn").onclick = async () => {
     const code = editor.getValue();
     const name = getTabName(currentTab);
     const API_BASE = "https://3ea5995c-1090-4c51-9fe6-82555a6f5b96-00-309xspfsl4afn.spock.replit.dev"; 
-
-    if (!realId) {
-        log("Error: Device Script ID not set in Settings.");
-        notify("Error: Script ID not set!");
-        return;
-    }
-
+    if (!realId) { log("Error: Script ID not set."); notify("Error: Script ID not set!"); return; }
     log(`Pushing '${name}' to Cloud...`);
     notify("Sending code to cloud...");
-
     try {
         const response = await fetch(`${API_BASE}/api/update-code`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
+            method: "POST", headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ id: realId, script: code })
         });
-
-        if (response.ok) {
-            log("Success: Code stored in Database.");
-            notify("Execute Success!");
-        } else {
-            const errText = await response.text();
-            log(`Server Error: ${response.status} - ${errText}`);
-            notify("Cloud Error: " + response.status);
-        }
-    } catch (err) {
-        log("Connection Error: Check if server is online.");
-        notify("Connection Failed");
-    }
+        if (response.ok) { log("Success: Code stored."); notify("Execute Success!"); } 
+        else { log(`Server Error: ${response.status}`); notify("Cloud Error: " + response.status); }
+    } catch (err) { log("Connection Error."); notify("Connection Failed"); }
 };
 
-document.getElementById("clearBtn").onclick = ()=>{
-  editor.setValue("");
-  log(`Cleared '${getTabName(currentTab)}'`);
-  notify("Editor Cleared");
-};
+document.getElementById("clearBtn").onclick = ()=>{ editor.setValue(""); log(`Cleared current tab`); notify("Editor Cleared"); };
 document.getElementById("newTabBtn").onclick = ()=>createTab();
 document.getElementById("saveBtn").onclick = ()=>{
   const name = getTabName(currentTab) + ".lua";
   const blob = new Blob([editor.getValue()]);
   const a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  a.download=name;
-  a.click();
-  log(`Saved '${name}'`);
-  notify("File Downloaded");
+  a.href=URL.createObjectURL(blob); a.download=name; a.click();
+  log(`Saved '${name}'`); notify("File Downloaded");
 };
 document.getElementById("openBtn").onclick = ()=>{
   const input=document.createElement("input");
@@ -661,12 +742,7 @@ document.getElementById("openBtn").onclick = ()=>{
     const file=e.target.files[0];
     if(!file) return;
     const reader=new FileReader();
-    reader.onload = ev=>{
-      createTab(file.name.replace(/\..+/,""));
-      editor.setValue(ev.target.result, -1);
-      log(`Opened '${file.name}'`);
-      notify(`Opened ${file.name}`);
-    };
+    reader.onload = ev=>{ createTab(file.name.replace(/\..+/,"")); editor.setValue(ev.target.result, -1); notify(`Opened ${file.name}`); };
     reader.readAsText(file);
   };
   input.click();
