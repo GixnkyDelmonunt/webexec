@@ -12,6 +12,14 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
   width:950px; height:550px; background:#1e1e1e; border:1px solid #333;
   display:flex; flex-direction:column; resize:both; overflow:hidden;
 }
+
+function log(message) {
+  const now = new Date();
+  const timestamp = now.toLocaleTimeString('en-US', { hour12:false });
+  output.innerText += `[${timestamp}] ${message}\n`;
+  output.scrollTop = output.scrollHeight; // auto-scroll
+}
+
 .titlebar {
   background:#111; padding:10px 15px; font-weight:bold;
   display:flex; justify-content:space-between; cursor:move;
