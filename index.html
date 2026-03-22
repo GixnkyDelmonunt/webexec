@@ -167,7 +167,6 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
 .primary-btn { background: #3a86ff; }
 .primary-btn:hover { background: #2a76ef; }
 
-/* GLOW EFFECT FOR STEP 3 */
 .ready-glow {
     box-shadow: 0 0 15px rgba(58, 134, 255, 0.6);
     border: 1px solid #3a86ff;
@@ -177,41 +176,39 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
 .left { flex:1; display:flex; flex-direction:column; overflow: hidden; }
 
 /* LINE NUMBERS STYLING */
-.editor-container {
-  display: flex;
+.editor-wrapper {
   flex: 1;
+  display: flex;
   overflow: hidden;
   background: #1e1e1e;
+  position: relative;
 }
 
 #lineNumbers {
   width: 45px;
   background: #1a1a1a;
   color: #555;
-  padding: 15px 10px;
+  padding: 15px 10px 15px 0;
   text-align: right;
   font-size: 14px;
   line-height: 1.5;
   user-select: none;
   border-right: 1px solid #333;
   overflow: hidden;
-  pointer-events: none;
 }
 
-/* UPDATED EDITORBOX FOR SCROLLING */
 #editorBox {
   flex:1;
   padding:15px;
   background:#1e1e1e;
   outline:none;
-  overflow: auto; /* Enables scrollbars */
-  white-space: pre; /* Keeps Lua formatting */
+  overflow: auto;
+  white-space: pre; 
   font-size:14px;
   line-height:1.5;
   tab-size: 4;
 }
 
-/* Custom Scrollbar Styling */
 #editorBox::-webkit-scrollbar { width: 10px; height: 10px; }
 #editorBox::-webkit-scrollbar-track { background: #111; }
 #editorBox::-webkit-scrollbar-thumb { background: #333; border-radius: 5px; }
@@ -298,7 +295,7 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
     </div>
 
     <div class="left">
-      <div class="editor-container">
+      <div class="editor-wrapper">
         <div id="lineNumbers">1</div>
         <div id="editorBox" contenteditable="true" spellcheck="false">-- Welcome to AWP.GG!</div>
       </div>
@@ -324,6 +321,41 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
 
 <script>
 
+/* ---------- LINE NUMBER SYSTEM ---------- */
+const editorBox = document.getElementById("editorBox");
+const lineNumbers = document.getElementById("lineNumbers");
+
+function updateLineNumbers() {
+  let content = editorBox.innerText;
+  
+  // Browsers often add a trailing \n to innerText in contenteditable
+  // We strip one trailing newline to keep the count accurate
+  if (content.endsWith('\n')) {
+    content = content.slice(0, -1);
+  }
+
+  const lines = content.split('\n');
+  const count = lines.length;
+  
+  let html = "";
+  for (let i = 1; i <= count; i++) {
+    html += i + "<br>";
+  }
+  lineNumbers.innerHTML = html;
+}
+
+// Sync Scrolling
+editorBox.onscroll = () => {
+  lineNumbers.scrollTop = editorBox.scrollTop;
+};
+
+// Update on every interaction
+editorBox.oninput = updateLineNumbers;
+editorBox.onkeydown = (e) => {
+    // Small delay to allow the browser to process the Enter key
+    setTimeout(updateLineNumbers, 0);
+};
+
 /* ---------- LOG SYSTEM ---------- */
 const output = document.getElementById("output");
 
@@ -332,28 +364,6 @@ function log(msg){
   output.textContent += `[${t}] ${msg}\n`;
   output.scrollTop = output.scrollHeight;
 }
-
-/* ---------- LINE NUMBER LOGIC ---------- */
-const lineNumbers = document.getElementById("lineNumbers");
-const editorBox = document.getElementById("editorBox");
-
-function updateLineNumbers() {
-  const content = editorBox.innerText;
-  const lines = content.split('\n');
-  const count = content.endsWith('\n') ? lines.length : lines.length;
-  let lineHtml = '';
-  for (let i = 1; i <= count; i++) {
-    lineHtml += i + '<br>';
-  }
-  lineNumbers.innerHTML = lineHtml;
-}
-
-// Sync scrolling and content
-editorBox.addEventListener('scroll', () => {
-  lineNumbers.scrollTop = editorBox.scrollTop;
-});
-
-editorBox.addEventListener('input', updateLineNumbers);
 
 /* ---------- SETTINGS & LOGIC ---------- */
 const settingsBtn = document.getElementById("settingsBtn");
@@ -429,7 +439,6 @@ function lockAndBlur() {
         settingHint.textContent = "ID Locked and Masked";
         isHidden = true;
         
-        // Add Glow to Step 3
         copyFullBtn.classList.add("ready-glow");
         log("Device script id set and masked");
     }
