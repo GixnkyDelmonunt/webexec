@@ -12,14 +12,19 @@
 * { margin:0; padding:0; box-sizing:border-box; }
 body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflow:hidden; }
 
+/* Changed to fixed and full screen by default */
 #executor {
   position:fixed; top:0; left:0;
   width:100vw; height:100vh;
   background:#1e1e1e; border:1px solid #333;
   display:flex; flex-direction:column;
   z-index: 1;
-  /* Reduced transition time for responsiveness during drag */
-  transition: width 0.2s, height 0.2s, top 0.2s, left 0.2s;
+  transition: width 0.3s, height 0.3s, top 0.3s, left 0.3s;
+}
+
+/* Fix for dragging lag: disable transitions while dragging */
+#executor.dragging {
+    transition: none !important;
 }
 
 /* Class for the "Small Window" mode */
@@ -29,22 +34,16 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
     left: 50px;
     width: 950px;
     height: 550px;
-}
-
-/* Minimize State */
-#executor.is-minimized {
-    height: 40px !important;
-    min-height: 40px !important;
+    resize: both;
     overflow: hidden;
 }
 
 .titlebar {
   background:#111; padding:10px 15px; font-weight:bold;
   display:flex; justify-content:space-between; 
-  cursor: default; /* Kept default cursor */
+  cursor: default; /* Changed from move to default */
   align-items: center;
   user-select: none;
-  height: 40px;
 }
 
 .title-left { display: flex; align-items: center; gap: 15px; }
@@ -77,7 +76,6 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
   display:flex; gap:5px;
   padding:0 5px;
   overflow-x:auto;
-  border-bottom: 1px solid #111;
 }
 
 .tab {
@@ -86,26 +84,24 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
   border-radius:5px 5px 0 0;
   cursor:pointer;
   display:flex; align-items:center;
-  min-width: 80px;
-  height: 30px;
-  margin-top: 5px;
 }
 
 .tab.active { background:#3a86ff; }
 
-.tab-name { pointer-events:auto; font-size: 12px; }
-.tab-input {
+.tab-name { pointer-events:auto; }
+.delete { margin-left:6px; cursor:pointer; }
+
+/* Inline Rename Input Style */
+.tab-rename-input {
     background: #1e1e1e;
     border: 1px solid #3a86ff;
     color: white;
     font-family: inherit;
     font-size: 12px;
-    width: 80px;
+    padding: 2px 5px;
     outline: none;
+    width: 80px;
 }
-
-.delete { margin-left:6px; cursor:pointer; font-size: 10px; color: #aaa; }
-.delete:hover { color: white; }
 
 .main { display:flex; flex:1; position: relative; overflow: hidden; }
 
@@ -207,6 +203,7 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
   font-family: Consolas, monospace;
   outline: none;
   border-radius: 4px;
+  transition: filter 0.2s ease;
 }
 
 .blurred {
@@ -214,6 +211,8 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
     user-select: none;
     pointer-events: none; 
 }
+
+.clean-input:focus { border-color: #3a86ff; }
 
 .toggle-btn {
     position: absolute;
@@ -250,6 +249,7 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
 
 .left { flex:1; display:flex; flex-direction:column; overflow: hidden; }
 
+/* LINE NUMBERS STYLING - Updated for Ace */
 .editor-container {
   display: flex;
   flex: 1;
@@ -265,11 +265,25 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
   font-size:14px;
 }
 
-.ace_editor { background-color: #1e1e1e !important; }
-.ace_gutter { background: #1a1a1a !important; color: #555 !important; }
-.ace_active-line { background: #2a2a2a !important; }
+/* Custom Ace Theme Overrides for VS Dark Look */
+.ace_editor {
+    background-color: #1e1e1e !important;
+}
+.ace_gutter {
+    background: #1a1a1a !important;
+    color: #555 !important;
+}
+.ace_active-line {
+    background: #2a2a2a !important;
+}
+.ace_keyword { color: #569CD6 !important; }
+.ace_string { color: #CE9178 !important; }
+.ace_comment { color: #6A9955 !important; }
+.ace_function { color: #DCDCAA !important; }
+.ace_variable { color: #9CDCFE !important; }
+.ace_numeric { color: #B5CEA8 !important; }
 
-.controls { display:flex; gap:8px; padding:10px; background: #1e1e1e; border-top: 1px solid #333; }
+.controls { display:flex; gap:8px; padding:10px; background: #1e1e1e; }
 
 .controls button {
   background:#2d2d2d;
@@ -280,8 +294,21 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
   transition: all 0.2s ease;
 }
 
-#executeBtn { background: #3a86ff; font-weight: bold; padding: 5px 20px; border-radius: 4px; }
-#executeBtn:hover { background: #4a96ff; }
+/* Updated Execute Button Styles */
+#executeBtn {
+    background: #3a86ff;
+    font-weight: bold;
+    padding: 5px 20px;
+    border-radius: 4px;
+}
+#executeBtn:hover {
+    background: #4a96ff;
+    box-shadow: 0 0 8px rgba(58, 134, 255, 0.4);
+}
+#executeBtn:active {
+    transform: scale(0.92);
+    background: #2a76ef;
+}
 
 .output {
   height:80px;
@@ -293,9 +320,21 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
   white-space:pre-wrap;
 }
 
-.sidebar { width:250px; background:#2d2d2d; padding:10px; }
-.search-bar input { width:100%; padding:5px; background:#1e1e1e; border:none; color:white; }
+.sidebar {
+  width:250px;
+  background:#2d2d2d;
+  padding:10px;
+}
 
+.search-bar input {
+  width:100%;
+  padding:5px;
+  background:#1e1e1e;
+  border:none;
+  color:white;
+}
+
+/* NOTIFICATION SYSTEM */
 #notification-container {
     position: fixed;
     top: 20px;
@@ -318,7 +357,11 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
     min-width: 200px;
     transform: translateX(120%);
     transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
+
 .notif.show { transform: translateX(0); }
 
 </style>
@@ -328,6 +371,7 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
 
 <div id="notification-container"></div>
 
+<!-- Custom Close Confirmation UI -->
 <div id="closeOverlay">
     <div class="close-modal">
         <h2>Close AWP.GG?</h2>
@@ -383,6 +427,7 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
                 <button id="copyBaseBtn" class="action-btn">Copy Script</button>
                 <button id="copyFullBtn" class="action-btn primary-btn">Copy Script with My ID</button>
             </div>
+            <small style="color:#666; display:block; margin-top:5px; font-size:11px;">Paste the script with your ID into your Roblox executor.</small>
         </div>
 
         <div class="step-label">Notification Settings</div>
@@ -411,7 +456,9 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
     </div>
 
     <div class="sidebar">
-      <div class="search-bar"><input placeholder="Search..."></div>
+      <div class="search-bar">
+        <input placeholder="Search...">
+      </div>
     </div>
   </div>
 </div>
@@ -453,11 +500,9 @@ sizeBtn.onclick = () => {
         executor.classList.add("small-window");
         sizeBtn.textContent = "▢";
         sizeBtn.title = "Full Screen";
-        // Reset manual styles so CSS takes over
-        executor.style.width = "";
-        executor.style.height = "";
     } else {
         executor.classList.remove("small-window");
+        // Reset manual style overrides so CSS classes can take over
         executor.style.width = "100vw";
         executor.style.height = "100vh";
         executor.style.top = "0";
@@ -465,69 +510,46 @@ sizeBtn.onclick = () => {
         sizeBtn.textContent = "❐";
         sizeBtn.title = "Small Window";
     }
-    // Ensure it's not "minimized" when toggling size
-    executor.classList.remove("is-minimized");
-    isMinimized = false;
-    setTimeout(() => editor.resize(), 250);
+    editor.resize();
 };
 
 minBtn.onclick = () => {
     isMinimized = !isMinimized;
+    const itemsToHide = [tabsList, mainWindow];
     if (isMinimized) {
-        executor.classList.add("is-minimized");
-        mainWindow.style.visibility = "hidden";
-        tabsList.style.visibility = "hidden";
+        itemsToHide.forEach(el => el.style.display = "none");
+        executor.style.height = "auto";
+        if(isSmall) executor.style.minHeight = "0";
     } else {
-        executor.classList.remove("is-minimized");
-        mainWindow.style.visibility = "visible";
-        tabsList.style.visibility = "visible";
+        itemsToHide.forEach(el => el.style.display = (el === tabsList ? "flex" : "flex"));
+        if (isSmall) {
+            // Fix: ensure the height goes back to exact small window size
+            executor.style.height = "550px";
+            executor.style.width = "950px";
+        } else {
+            executor.style.height = "100vh";
+            executor.style.width = "100vw";
+        }
     }
-    setTimeout(() => editor.resize(), 250);
+    editor.resize();
 };
 
-closeBtn.onclick = () => { closeOverlay.style.display = "flex"; };
-document.getElementById("cancelClose").onclick = () => { closeOverlay.style.display = "none"; };
-document.getElementById("confirmClose").onclick = () => { window.close(); notify("Please close manually."); };
+closeBtn.onclick = () => {
+    closeOverlay.style.display = "flex";
+};
 
-/* ---------- DRAG (FIXED LAG) ---------- */
-const dragBar = document.getElementById("dragBar");
-let isDragging = false;
-let currentX, currentY, initialX, initialY, xOffset = 0, yOffset = 0;
+document.getElementById("cancelClose").onclick = () => {
+    closeOverlay.style.display = "none";
+};
 
-dragBar.addEventListener("mousedown", dragStart);
-window.addEventListener("mousemove", dragActive);
-window.addEventListener("mouseup", dragEnd);
+document.getElementById("confirmClose").onclick = () => {
+    window.close();
+    // Fallback if browser blocks self-close
+    notify("Please close the tab manually.");
+    closeOverlay.style.display = "none";
+};
 
-function dragStart(e) {
-    if(!isSmall || e.target.closest('.win-btn') || e.target.id === "settingsBtn") return;
-    
-    // Get current position from style or compute it
-    const rect = executor.getBoundingClientRect();
-    initialX = e.clientX - rect.left;
-    initialY = e.clientY - rect.top;
-
-    isDragging = true;
-    // Disable transitions while dragging for 0 lag
-    executor.style.transition = "none";
-}
-
-function dragActive(e) {
-    if (isDragging) {
-        e.preventDefault();
-        let nx = e.clientX - initialX;
-        let ny = e.clientY - initialY;
-        executor.style.left = nx + "px";
-        executor.style.top = ny + "px";
-    }
-}
-
-function dragEnd() {
-    isDragging = false;
-    // Restore transition
-    executor.style.transition = "width 0.2s, height 0.2s, top 0.2s, left 0.2s";
-}
-
-/* ---------- ACE EDITOR ---------- */
+/* ---------- ACE EDITOR INITIALIZATION ---------- */
 const editor = ace.edit("editorBox");
 editor.setTheme("ace/theme/monokai");
 editor.session.setMode("ace/mode/lua");
@@ -535,8 +557,11 @@ editor.setOptions({
     fontFamily: "Consolas, monospace",
     fontSize: "14px",
     showPrintMargin: false,
+    displayIndentGuides: true,
     enableBasicAutocompletion: true,
     enableLiveAutocompletion: true,
+    useSoftTabs: true,
+    tabSize: 4
 });
 
 /* ---------- LOG SYSTEM ---------- */
@@ -547,7 +572,7 @@ function log(msg){
   output.scrollTop = output.scrollHeight;
 }
 
-/* ---------- SETTINGS ---------- */
+/* ---------- SETTINGS & LOGIC ---------- */
 const settingsBtn = document.getElementById("settingsBtn");
 const settingsView = document.getElementById("settingsView");
 const scriptIdInput = document.getElementById("scriptIdInput");
@@ -563,24 +588,43 @@ let realId = "";
 let isSettingsOpen = false;
 let isHidden = false;
 
-const LUA_TEMPLATE = `local a="[[ID]]" -- Loader Logic Here...`;
+const LUA_TEMPLATE = `local a="[[ID]]"local b="https://3ea5995c-1090-4c51-9fe6-82555a6f5b96-00-309xspfsl4afn.spock.replit.dev/api/get-code?id="..a;local c=3;local d=""local e={print=function(...)print("[AWP.GG]",...)end,warn=function(...)warn("[AWP.GG]",...)end,clear=function()print(string.rep("\\n",50))end}local f=request or http_request or syn and syn.request or fluxus and fluxus.request;print("------------------------------------------")print("AWP.GG BROWSER-SPOOF ACTIVE")print("------------------------------------------")while true do local g,h=pcall(function()return f({Url=b,Method="GET",Headers={["User-Agent"]="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",["Accept"]="*/*"}})end)if g and h and h.Body then local i=h.Body;if i~=""and i~=d and not string.find(i,"No code found")then if string.find(i,"<!DOCTYPE")or string.find(i,"<html")then warn("⚠️ [REPLIT BLOCK] Still getting the 'Wake Up' page. Try refreshing the Replit tab.")else d=i;print("✅ [SUCCESS] Cloud Script Received!")local j,k=loadstring(i)if j then setfenv(j,setmetatable(e,{__index=getfenv()}))task.spawn(j)else warn("❌ [SYNTAX ERROR] Typo in your website code: "..tostring(k))end end end else warn("⚠️ [CONNECTION ERROR] "..tostring(h))end;task.wait(c)end`;
 
 function generateRandomString(length) {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    let res = "";
-    for (let i = 0; i < length; i++) res += chars.charAt(Math.floor(Math.random() * chars.length));
-    return res;
+    let result = "";
+    for (let i = 0; i < length; i++) { result += chars.charAt(Math.floor(Math.random() * chars.length)); }
+    return result;
 }
 
 genBtn.onclick = () => {
     const newId = "DEV-" + generateRandomString(14);
     genDisplay.textContent = newId;
+    log("Generated new ID: " + newId);
     notify("New ID Generated");
 };
 
 copyGenBtn.onclick = () => {
-    navigator.clipboard.writeText(genDisplay.textContent);
-    notify("ID Copied");
+    const id = genDisplay.textContent;
+    if(id.includes("XXXX")) return;
+    navigator.clipboard.writeText(id);
+    log("ID copied to clipboard!");
+    notify("ID Copied to Clipboard");
+};
+
+copyBaseBtn.onclick = () => {
+    const script = LUA_TEMPLATE.replace("[[ID]]", "YOUR_ID_HERE");
+    navigator.clipboard.writeText(script);
+    log("Base script copied!");
+    notify("Base Script Copied");
+};
+
+copyFullBtn.onclick = () => {
+    if(!realId) { notify("Error: Set Script ID first!"); return; }
+    const script = LUA_TEMPLATE.replace("[[ID]]", realId);
+    navigator.clipboard.writeText(script);
+    log("Script with ID copied!");
+    notify("Script with ID Copied");
 };
 
 settingsBtn.onclick = () => {
@@ -593,11 +637,14 @@ function lockAndBlur() {
     const val = scriptIdInput.value.trim();
     if(val !== "" && !isHidden) {
         realId = val;
-        scriptIdInput.value = "•".repeat(realId.length);
+        scriptIdInput.value = generateRandomString(realId.length);
         scriptIdInput.classList.add("blurred");
         visibilityToggle.style.display = "block";
+        visibilityToggle.textContent = "Show";
+        settingHint.textContent = "ID Locked and Masked";
         isHidden = true;
         copyFullBtn.classList.add("ready-glow");
+        log("Device script id set and masked");
         notify("Script ID Locked");
     }
 }
@@ -606,21 +653,49 @@ visibilityToggle.onclick = () => {
     if(isHidden) {
         scriptIdInput.value = realId;
         scriptIdInput.classList.remove("blurred");
+        scriptIdInput.style.pointerEvents = "auto";
         visibilityToggle.textContent = "Hide";
         isHidden = false;
+        copyFullBtn.classList.remove("ready-glow");
     } else {
         lockAndBlur();
-        visibilityToggle.textContent = "Show";
     }
 };
 
 scriptIdInput.onkeydown = e => { if(e.key === "Enter") { lockAndBlur(); scriptIdInput.blur(); } };
+scriptIdInput.onblur = () => { if(!isHidden && scriptIdInput.value.trim() !== "") lockAndBlur(); };
 
-/* ---------- TABS & CUSTOM RENAMING ---------- */
+/* ---------- DRAG (Fixed Lag & Cursor) ---------- */
+const dragBar = document.getElementById("dragBar");
+let drag=false, offX, offY;
+dragBar.onmousedown = e=>{
+  if(!isSmall || e.target.closest('.win-btn') || e.target === settingsBtn) return;
+  drag=true;
+  executor.classList.add("dragging"); // Disables transition during movement
+  offX = e.clientX - executor.offsetLeft;
+  offY = e.clientY - executor.offsetTop;
+};
+document.onmousemove = e=>{
+  if(drag && isSmall){
+    executor.style.left = (e.clientX - offX)+"px";
+    executor.style.top = (e.clientY - offY)+"px";
+  }
+};
+document.onmouseup = ()=>{
+    drag=false;
+    executor.classList.remove("dragging");
+};
+
+/* ---------- TABS ---------- */
 const tabsContainer = document.getElementById("tabs");
 let tabsData = {};
 let currentTab = null;
 let tabCount = 0;
+
+function getTabName(id){
+  const el = tabsContainer.querySelector(`[data-tab="${id}"]`);
+  return el?.querySelector(".tab-name").textContent || "script";
+}
 
 function createTab(name="Untitled"){
   tabCount++;
@@ -630,43 +705,42 @@ function createTab(name="Untitled"){
   tab.className="tab";
   tab.dataset.tab=id;
   tab.innerHTML = `<span class="tab-name">${name}</span><span class="delete">✕</span>`;
-  
   const nameSpan = tab.querySelector(".tab-name");
   const del = tab.querySelector(".delete");
   
-  tab.onclick = e => { if(e.target !== del && e.target.tagName !== "INPUT") switchTab(id, tab); };
-  del.onclick = e => { e.stopPropagation(); deleteTab(id, tab); };
+  tab.onclick = e=>{ if(e.target!==del) switchTab(id, tab); };
+  del.onclick = e=>{ e.stopPropagation(); log(`Deleted tab '${nameSpan.textContent}'`); deleteTab(id, tab); };
   
-  // Custom Built-in Renamer
-  nameSpan.ondblclick = () => renameTab(nameSpan, id);
-
-  tabsContainer.appendChild(tab);
-  switchTab(id, tab);
-}
-
-function renameTab(span, id) {
-    const oldName = span.textContent;
+  // Inline rename logic (built-in, no alert/prompt)
+  nameSpan.ondblclick = (e)=>{
+    e.stopPropagation();
+    const currentName = nameSpan.textContent;
     const input = document.createElement("input");
     input.type = "text";
-    input.value = oldName;
-    input.className = "tab-input";
+    input.value = currentName;
+    input.className = "tab-rename-input";
     
-    span.replaceWith(input);
+    nameSpan.replaceWith(input);
     input.focus();
     input.select();
 
-    const save = () => {
-        const newName = input.value.trim() || oldName;
-        input.replaceWith(span);
-        span.textContent = newName;
-        log(`Renamed tab to ${newName}`);
+    const saveName = () => {
+        const newName = input.value.trim() || "Untitled";
+        input.replaceWith(nameSpan);
+        nameSpan.textContent = newName;
+        if(newName !== currentName) {
+            log(`Renamed '${currentName}' to '${newName}'`);
+            notify(`Renamed to "${newName}"`);
+        }
     };
 
-    input.onkeydown = e => {
-        if(e.key === "Enter") save();
-        if(e.key === "Escape") { input.replaceWith(span); }
-    };
-    input.onblur = save;
+    input.onkeydown = (ev) => { if(ev.key === "Enter") saveName(); if(ev.key === "Escape") input.replaceWith(nameSpan); };
+    input.onblur = saveName;
+  };
+
+  tabsContainer.appendChild(tab);
+  switchTab(id, tab);
+  tabsContainer.scrollLeft = tabsContainer.scrollWidth;
 }
 
 function switchTab(id, el){
@@ -678,27 +752,55 @@ function switchTab(id, el){
 }
 
 function deleteTab(id, el){
-  if(Object.keys(tabsData).length <= 1) return;
+  if(Object.keys(tabsData).length<=1) return;
   delete tabsData[id];
   el.remove();
   const next = tabsContainer.querySelector(".tab");
-  if(next) switchTab(next.dataset.tab, next);
+  if(next) switchTab(next.dataset.tab,next);
 }
 
-/* ---------- CORE BUTTONS ---------- */
-document.getElementById("newTabBtn").onclick = () => createTab();
-document.getElementById("clearBtn").onclick = () => { editor.setValue(""); notify("Cleared"); };
-document.getElementById("executeBtn").onclick = () => { notify("Executing Cloud Push..."); log("Executed code to Cloud."); };
+/* ---------- BUTTONS ---------- */
+document.getElementById("executeBtn").onclick = async () => {
+    const code = editor.getValue();
+    const name = getTabName(currentTab);
+    const API_BASE = "https://3ea5995c-1090-4c51-9fe6-82555a6f5b96-00-309xspfsl4afn.spock.replit.dev"; 
+    if (!realId) { log("Error: Script ID not set."); notify("Error: Script ID not set!"); return; }
+    log(`Pushing '${name}' to Cloud...`);
+    notify("Sending code to cloud...");
+    try {
+        const response = await fetch(`${API_BASE}/api/update-code`, {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: realId, script: code })
+        });
+        if (response.ok) { log("Success: Code stored."); notify("Execute Success!"); } 
+        else { log(`Server Error: ${response.status}`); notify("Cloud Error: " + response.status); }
+    } catch (err) { log("Connection Error."); notify("Connection Failed"); }
+};
 
-document.getElementById("saveBtn").onclick = () => {
+document.getElementById("clearBtn").onclick = ()=>{ editor.setValue(""); log(`Cleared current tab`); notify("Editor Cleared"); };
+document.getElementById("newTabBtn").onclick = ()=>createTab();
+document.getElementById("saveBtn").onclick = ()=>{
+  const name = getTabName(currentTab) + ".lua";
   const blob = new Blob([editor.getValue()]);
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob); a.download = "script.lua"; a.click();
-  notify("Saved to disk");
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob); a.download=name; a.click();
+  log(`Saved '${name}'`); notify("File Downloaded");
+};
+document.getElementById("openBtn").onclick = ()=>{
+  const input=document.createElement("input");
+  input.type="file";
+  input.onchange = e=>{
+    const file=e.target.files[0];
+    if(!file) return;
+    const reader=new FileReader();
+    reader.onload = ev=>{ createTab(file.name.replace(/\..+/,"")); editor.setValue(ev.target.result, -1); notify(`Opened ${file.name}`); };
+    reader.readAsText(file);
+  };
+  input.click();
 };
 
 createTab();
-log("AWP.GG initialized.");
+log("Executor started");
 
 </script>
 </body>
