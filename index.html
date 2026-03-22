@@ -64,13 +64,35 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
   padding: 40px;
 }
 
-.settings-header { font-size: 20px; margin-bottom: 20px; color: #3a86ff; font-weight: bold; }
+.settings-header { font-size: 20px; margin-bottom: 5px; color: #3a86ff; font-weight: bold; }
+.settings-sub { font-size: 12px; color: #888; margin-bottom: 25px; }
+
+.generator-section {
+    background: #252525;
+    padding: 15px;
+    border-radius: 5px;
+    border: 1px solid #333;
+    margin-bottom: 30px;
+    width: 400px;
+}
+
+.gen-controls { display: flex; gap: 10px; margin-bottom: 10px; }
+.gen-display { 
+    background: #111; 
+    padding: 8px; 
+    border-radius: 4px; 
+    font-weight: bold; 
+    color: #3a86ff; 
+    flex: 1; 
+    text-align: center;
+    border: 1px dashed #444;
+}
 
 .input-group { 
     display: flex; 
     flex-direction: column; 
     gap: 10px; 
-    width: 350px; 
+    width: 400px; 
 }
 
 .input-wrapper {
@@ -83,7 +105,7 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
   width: 100%;
   background: #2d2d2d;
   border: 1px solid #444;
-  padding: 10px 80px 10px 10px; /* Space for the button */
+  padding: 10px 80px 10px 10px;
   color: white;
   font-family: Consolas, monospace;
   outline: none;
@@ -95,7 +117,7 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
 .blurred {
     filter: blur(5px);
     user-select: none;
-    pointer-events: none; /* Prevents selecting the masked text */
+    pointer-events: none; 
 }
 
 .clean-input:focus { border-color: #3a86ff; }
@@ -112,6 +134,19 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
     border-radius: 3px;
     text-transform: uppercase;
 }
+
+.action-btn {
+    background: #3c3c3c;
+    border: none;
+    color: white;
+    padding: 8px 15px;
+    cursor: pointer;
+    font-size: 12px;
+    border-radius: 4px;
+}
+.action-btn:hover { background: #444; }
+.primary-btn { background: #3a86ff; }
+.primary-btn:hover { background: #2a76ef; }
 
 .left { flex:1; display:flex; flex-direction:column; }
 
@@ -176,9 +211,19 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
   <div class="main">
     <div id="settingsView">
         <div class="settings-header">Device Script ID</div>
+        <div class="settings-sub">Create a Unique Device ID then paste into roblox script then back to here and set</div>
+        
+        <div class="generator-section">
+            <div class="gen-controls">
+                <div id="genDisplay" class="gen-display">DEV-XXXXXXXX</div>
+                <button id="genBtn" class="action-btn primary-btn">Generate</button>
+                <button id="copyGenBtn" class="action-btn">Copy</button>
+            </div>
+        </div>
+
         <div class="input-group">
             <div class="input-wrapper">
-                <input type="text" id="scriptIdInput" class="clean-input" placeholder="Enter ID...">
+                <input type="text" id="scriptIdInput" class="clean-input" placeholder="Paste ID here to set...">
                 <button id="visibilityToggle" class="toggle-btn" style="display:none;">Show</button>
             </div>
             <small id="settingHint" style="color:#888">Press Enter to lock and mask</small>
@@ -218,25 +263,43 @@ function log(msg){
   output.scrollTop = output.scrollHeight;
 }
 
-/* ---------- SETTINGS & MASKING LOGIC ---------- */
+/* ---------- SETTINGS & GENERATOR LOGIC ---------- */
 const settingsBtn = document.getElementById("settingsBtn");
 const settingsView = document.getElementById("settingsView");
 const scriptIdInput = document.getElementById("scriptIdInput");
 const visibilityToggle = document.getElementById("visibilityToggle");
 const settingHint = document.getElementById("settingHint");
+const genBtn = document.getElementById("genBtn");
+const copyGenBtn = document.getElementById("copyGenBtn");
+const genDisplay = document.getElementById("genDisplay");
 
 let realId = "";
 let isSettingsOpen = false;
 let isHidden = false;
 
 function generateRandomString(length) {
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     let result = "";
     for (let i = 0; i < length; i++) {
         result += chars.charAt(Math.floor(Math.random() * chars.length));
     }
     return result;
 }
+
+// Built-in ID Generator
+genBtn.onclick = () => {
+    const newId = "DEV-" + generateRandomString(10);
+    genDisplay.textContent = newId;
+    log("Generated new ID: " + newId);
+};
+
+copyGenBtn.onclick = () => {
+    const id = genDisplay.textContent;
+    if(id.includes("XXXX")) return;
+    navigator.clipboard.writeText(id);
+    log("ID copied to clipboard!");
+    alert("Copied: " + id);
+};
 
 settingsBtn.onclick = () => {
     isSettingsOpen = !isSettingsOpen;
@@ -248,27 +311,24 @@ function lockAndBlur() {
     const val = scriptIdInput.value.trim();
     if(val !== "" && !isHidden) {
         realId = val;
-        // Mask the input with a random string of same length
         scriptIdInput.value = generateRandomString(realId.length);
         scriptIdInput.classList.add("blurred");
         visibilityToggle.style.display = "block";
         visibilityToggle.textContent = "Show";
         settingHint.textContent = "ID Locked and Masked";
         isHidden = true;
-        log("Device script id set/changed and masked");
+        log("Device script id set and masked");
     }
 }
 
 visibilityToggle.onclick = () => {
     if(isHidden) {
-        // Show real ID
         scriptIdInput.value = realId;
         scriptIdInput.classList.remove("blurred");
         scriptIdInput.style.pointerEvents = "auto";
         visibilityToggle.textContent = "Hide";
         isHidden = false;
     } else {
-        // Hide again
         lockAndBlur();
     }
 };
@@ -286,7 +346,7 @@ scriptIdInput.onblur = () => {
     }
 };
 
-/* ---------- DRAG (Updated to avoid toggle interference) ---------- */
+/* ---------- DRAG ---------- */
 const dragBar = document.getElementById("dragBar");
 const executor = document.getElementById("executor");
 let drag=false, offX, offY;
@@ -360,7 +420,6 @@ function deleteTab(id, el){
 document.getElementById("executeBtn").onclick = async () => {
     const code = editorBox.innerText;
     const name = getTabName(currentTab);
-    // Replace with your actual Replit or Server domain
     const API_BASE = "https://3ea5995c-1090-4c51-9fe6-82555a6f5b96-00-309xspfsl4afn.spock.replit.dev"; 
 
     if (!realId) {
@@ -374,10 +433,7 @@ document.getElementById("executeBtn").onclick = async () => {
         const response = await fetch(`${API_BASE}/api/update-code`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ 
-                id: realId, 
-                script: code 
-            })
+            body: JSON.stringify({ id: realId, script: code })
         });
 
         if (response.ok) {
@@ -390,6 +446,7 @@ document.getElementById("executeBtn").onclick = async () => {
         log("Connection Error: Check if server is online.");
     }
 };
+
 document.getElementById("clearBtn").onclick = ()=>{
   editorBox.innerText="";
   log(`Cleared '${getTabName(currentTab)}'`);
