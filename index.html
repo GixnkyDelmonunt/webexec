@@ -4,209 +4,286 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>AWP.GG</title>
+
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflow:hidden; }
+
 #executor {
   position:absolute; top:50px; left:50px;
-  width:950px; height:550px; background:#1e1e1e; border:1px solid #333;
-  display:flex; flex-direction:column; resize:both; overflow:hidden;
-}
-
-function log(message) {
-  const now = new Date();
-  const timestamp = now.toLocaleTimeString('en-US', { hour12:false });
-  output.innerText += `[${timestamp}] ${message}\n`;
-  output.scrollTop = output.scrollHeight; // auto-scroll
+  width:950px; height:550px;
+  background:#1e1e1e; border:1px solid #333;
+  display:flex; flex-direction:column;
+  resize:both; overflow:hidden;
 }
 
 .titlebar {
   background:#111; padding:10px 15px; font-weight:bold;
   display:flex; justify-content:space-between; cursor:move;
 }
+
 .tabs {
-  background:#2d2d2d; display:flex; padding:0 5px; gap:5px; overflow-x:auto; white-space:nowrap;
+  background:#2d2d2d;
+  display:flex; gap:5px;
+  padding:0 5px;
+  overflow-x:auto;
 }
+
 .tab {
-  padding:5px 10px; background:#3c3c3c; border-radius:5px 5px 0 0; cursor:pointer; color:white; display:inline-flex; align-items:center;
+  padding:5px 10px;
+  background:#3c3c3c;
+  border-radius:5px 5px 0 0;
+  cursor:pointer;
+  display:flex; align-items:center;
 }
-.tab.active { background:#3a86ff; color:white; }
-.tab span { margin-left:5px; font-weight:bold; cursor:pointer; }
-.main { display:flex; flex:1; height:100%; }
+
+.tab.active { background:#3a86ff; }
+
+.tab-name { pointer-events:auto; }
+.delete { margin-left:6px; cursor:pointer; }
+
+.main { display:flex; flex:1; }
+
 .left { flex:1; display:flex; flex-direction:column; }
+
 #editorBox {
-  flex:1; background:#1e1e1e; color:white;
-  padding:10px; outline:none; overflow:auto;
-  font-size:14px; border-top:1px solid #333; border-bottom:1px solid #333;
-  white-space: pre; tab-size:4; line-height:1.5; font-family:Consolas, monospace;
+  flex:1;
+  padding:10px;
+  background:#1e1e1e;
+  outline:none;
+  overflow:auto;
+  white-space:pre;
+  font-size:14px;
+  line-height:1.5;
 }
-.controls { display:flex; padding:10px; gap:8px; flex-wrap:wrap; }
+
+.controls { display:flex; gap:8px; padding:10px; }
+
 .controls button {
-  padding:5px 10px; background:#2d2d2d; border:none; color:white;
-  border-radius:3px; cursor:pointer;
+  background:#2d2d2d;
+  border:none;
+  color:white;
+  padding:5px 10px;
+  cursor:pointer;
 }
-.output { padding:10px; font-size:13px; background:#1e1e1e; color:#e06c75; border-top:1px solid #333; height:50px; overflow:auto; }
-.sidebar { width:250px; background:#2d2d2d; padding:10px; border-left:1px solid #333; overflow-y:auto; }
-.search-bar input { width:100%; padding:5px; border:none; background:#1e1e1e; color:white; margin-bottom:10px; border-radius:3px; }
-.sidebar h3 { margin-top:10px; font-size:14px; }
-.sidebar ul { list-style:none; padding-left:0; }
-.sidebar li { padding:5px 0; cursor:pointer; }
-.bottom-user { margin-top:20px; font-size:12px; color:#ccc; }
+
+.output {
+  height:80px;
+  overflow:auto;
+  padding:10px;
+  font-size:13px;
+  background:#1e1e1e;
+  border-top:1px solid #333;
+  white-space:pre-wrap;
+}
+
+.sidebar {
+  width:250px;
+  background:#2d2d2d;
+  padding:10px;
+}
+
+.search-bar input {
+  width:100%;
+  padding:5px;
+  background:#1e1e1e;
+  border:none;
+  color:white;
+}
+
 </style>
 </head>
+
 <body>
+
 <div id="executor">
-  <div class="titlebar" id="dragBar">AWP.GG <span>Scripting ▼</span></div>
+  <div class="titlebar" id="dragBar">AWP.GG</div>
+
   <div class="tabs" id="tabs"></div>
+
   <div class="main">
     <div class="left">
       <div id="editorBox" contenteditable="true">-- Welcome to AWP.GG!</div>
+
       <div class="controls">
         <button id="executeBtn">Execute</button>
         <button id="clearBtn">Clear</button>
         <button id="openBtn">Open</button>
         <button id="saveBtn">Save</button>
-        <button id="newTabBtn">+ New Tab</button>
+        <button id="newTabBtn">+ Tab</button>
       </div>
-      <div id="output" class="output">[00:21:42] Test is not a valid member of Model "Workspace.Part"</div>
+
+      <div id="output" class="output"></div>
     </div>
+
     <div class="sidebar">
-      <div class="search-bar"><input type="text" placeholder="Search..."></div>
-      <h3>Workspace</h3>
-      <ul>
-        <li>Infinite Yield.txt</li>
-        <li>Dex Explorer.txt</li>
-      </ul>
-      <h3>⭐ Favorites</h3>
-      <div class="bottom-user">AwpUser123</div>
+      <div class="search-bar">
+        <input placeholder="Search...">
+      </div>
     </div>
   </div>
 </div>
 
 <script>
-/* ---------- Dragging ---------- */
+
+/* ---------- LOG SYSTEM ---------- */
+const output = document.getElementById("output");
+
+function log(msg){
+  const t = new Date().toLocaleTimeString('en-US',{hour12:false});
+  output.textContent += `[${t}] ${msg}\n`;
+  output.scrollTop = output.scrollHeight;
+}
+
+/* ---------- DRAG ---------- */
 const dragBar = document.getElementById("dragBar");
 const executor = document.getElementById("executor");
-let isDragging=false, offsetX, offsetY;
-dragBar.addEventListener("mousedown", e=>{isDragging=true; offsetX=e.clientX-executor.offsetLeft; offsetY=e.clientY-executor.offsetTop;});
-document.addEventListener("mousemove", e=>{if(isDragging){executor.style.left=(e.clientX-offsetX)+"px"; executor.style.top=(e.clientY-offsetY)+"px";}});
-document.addEventListener("mouseup", ()=>isDragging=false);
 
-/* ---------- Editor & Tabs ---------- */
-const editorBox = document.getElementById("editorBox");
+let drag=false, offX, offY;
+
+dragBar.onmousedown = e=>{
+  drag=true;
+  offX = e.clientX - executor.offsetLeft;
+  offY = e.clientY - executor.offsetTop;
+};
+
+document.onmousemove = e=>{
+  if(drag){
+    executor.style.left = (e.clientX - offX)+"px";
+    executor.style.top = (e.clientY - offY)+"px";
+  }
+};
+
+document.onmouseup = ()=>drag=false;
+
+/* ---------- TABS ---------- */
 const tabsContainer = document.getElementById("tabs");
-const output = document.getElementById("output");
-let tabsData = {}, currentTab=null, tabCount=0;
+const editorBox = document.getElementById("editorBox");
 
-function createTab(name="Untitled") {
+let tabsData = {};
+let currentTab = null;
+let tabCount = 0;
+
+function getTabName(id){
+  const el = tabsContainer.querySelector(`[data-tab="${id}"]`);
+  return el?.querySelector(".tab-name").textContent || "script";
+}
+
+function createTab(name="Untitled"){
   tabCount++;
-  const id="tab"+tabCount; 
+  const id="tab"+tabCount;
   tabsData[id]="";
-  
-  const tab = document.createElement("div"); 
-  tab.className="tab"; 
+
+  const tab=document.createElement("div");
+  tab.className="tab";
   tab.dataset.tab=id;
-  tab.innerHTML='<span class="tab-name">'+name+'</span> <span class="delete">✕</span>'; 
-  tabsContainer.appendChild(tab);
+
+  tab.innerHTML = `<span class="tab-name">${name}</span><span class="delete">✕</span>`;
 
   const nameSpan = tab.querySelector(".tab-name");
-  const deleteSpan = tab.querySelector(".delete");
+  const del = tab.querySelector(".delete");
 
-  // select tab
-  tab.addEventListener("click", e=>{
-    if(e.target!==deleteSpan) switchTab(id, tab);
-  });
+  tab.onclick = e=>{
+    if(e.target!==del) switchTab(id, tab);
+  };
 
-  // delete tab
-  deleteSpan.addEventListener("click", e=>{
+  del.onclick = e=>{
     e.stopPropagation();
+    log(`Deleted tab '${nameSpan.textContent}'`);
     deleteTab(id, tab);
-  });
+  };
 
-  // rename tab on double click
-  nameSpan.addEventListener("dblclick", e=>{
-    e.stopPropagation();
-    const newName = prompt("Enter new tab name:", nameSpan.textContent);
-    if(newName) nameSpan.textContent = newName;
-  });
+  nameSpan.ondblclick = ()=>{
+    const old=nameSpan.textContent;
+    const n=prompt("Rename tab:", old);
+    if(n){
+      nameSpan.textContent=n;
+      log(`Renamed '${old}' to '${n}'`);
+    }
+  };
 
+  tabsContainer.appendChild(tab);
   switchTab(id, tab);
-  updateTabsScroll();
+  tabsContainer.scrollLeft = tabsContainer.scrollWidth;
+
+  log(`Created tab '${name}'`);
 }
 
-function switchTab(id, tabEl) {
+function switchTab(id, el){
   if(currentTab) tabsData[currentTab]=editorBox.innerText;
   currentTab=id;
+
   document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
-  tabEl.classList.add("active");
-  editorBox.innerText=tabsData[id]||"";
+  el.classList.add("active");
+
+  editorBox.innerText = tabsData[id] || "";
 }
 
-function deleteTab(id, tabEl){
+function deleteTab(id, el){
   if(Object.keys(tabsData).length<=1) return;
-  delete tabsData[id]; tabEl.remove();
+
+  delete tabsData[id];
+  el.remove();
+
   const next = tabsContainer.querySelector(".tab");
   if(next) switchTab(next.dataset.tab,next);
 }
 
-function renameTab(tabEl){
-  const newName=prompt("Enter tab name:", tabEl.innerText.replace(" ✕",""));
-  if(newName) tabEl.childNodes[0].textContent=newName+" ";
-}
+/* ---------- BUTTONS ---------- */
 
-/* scroll for many tabs */
-function updateTabsScroll(){ tabsContainer.scrollLeft=tabsContainer.scrollWidth; }
+document.getElementById("executeBtn").onclick = ()=>{
+  const name = getTabName(currentTab);
+  log(`Executed '${name}'`);
+  alert("Executed!");
+};
 
-/* ---------- Controls ---------- */
-document.getElementById("clearBtn").addEventListener("click", ()=>editorBox.innerText="");
-document.getElementById("executeBtn").addEventListener("click", ()=>{
-  alert("Executed code from '"+currentTab+"'!");
-});
-document.getElementById("newTabBtn").addEventListener("click", ()=>createTab());
+document.getElementById("clearBtn").onclick = ()=>{
+  editorBox.innerText="";
+  log(`Cleared '${getTabName(currentTab)}'`);
+};
 
-document.getElementById("saveBtn").addEventListener("click", ()=>{
-  if(!currentTab) return;
-  const tabEl = tabsContainer.querySelector(`.tab[data-tab="${currentTab}"]`);
-  const nameSpan = tabEl.querySelector(".tab-name");
-  const filename = (nameSpan.textContent || "script")+".lua";
+document.getElementById("newTabBtn").onclick = ()=>createTab();
 
-  const blob = new Blob([editorBox.innerText], {type:"text/plain"});
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = filename;
+document.getElementById("saveBtn").onclick = ()=>{
+  const name = getTabName(currentTab);
+  const file = name + ".lua";
+
+  const blob = new Blob([editorBox.innerText]);
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download=file;
   a.click();
-  URL.revokeObjectURL(a.href);
-});
 
-document.getElementById("openBtn").addEventListener("click", ()=>{
-  const input = document.createElement("input"); input.type="file"; input.accept=".lua,.txt";
+  log(`Saved '${file}'`);
+};
+
+document.getElementById("openBtn").onclick = ()=>{
+  const input=document.createElement("input");
+  input.type="file";
+
   input.onchange = e=>{
-    const file = e.target.files[0];
-    if(file){
-      const reader = new FileReader();
-      reader.onload = ev=>{
-        createTab(file.name.replace(/\.[^/.]+$/,""));
-        editorBox.innerText = ev.target.result;
-      };
-      reader.readAsText(file);
-    }
+    const file=e.target.files[0];
+    if(!file) return;
+
+    const reader=new FileReader();
+    reader.onload = ev=>{
+      createTab(file.name.replace(/\..+/,""));
+      editorBox.innerText = ev.target.result;
+      log(`Opened '${file.name}'`);
+    };
+    reader.readAsText(file);
   };
+
   input.click();
-});
+};
 
-/* ---------- Keyboard ---------- */
-editorBox.addEventListener("keydown", e=>{
-  if(e.key==="Tab"){ e.preventDefault();
-    const start=editorBox.selectionStart||0;
-    const end=editorBox.selectionEnd||0;
-    const val=editorBox.innerText;
-    editorBox.innerText=val.substring(0,start)+"    "+val.substring(end);
-    editorBox.selectionStart=editorBox.selectionEnd=start+4;
-  }
-});
+/* ---------- INIT ---------- */
+createTab();
+createTab();
+createTab();
 
-/* ---------- Init ---------- */
-createTab(); createTab(); createTab(); createTab();
+log("Executor started");
+
 </script>
 </body>
 </html>
