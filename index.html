@@ -181,7 +181,6 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
   display: flex;
   overflow: hidden;
   background: #1e1e1e;
-  position: relative;
 }
 
 #lineNumbers {
@@ -326,16 +325,17 @@ const editorBox = document.getElementById("editorBox");
 const lineNumbers = document.getElementById("lineNumbers");
 
 function updateLineNumbers() {
-  let content = editorBox.innerText;
+  const text = editorBox.innerText;
+  const lines = text.split('\n');
   
-  // Browsers often add a trailing \n to innerText in contenteditable
-  // We strip one trailing newline to keep the count accurate
-  if (content.endsWith('\n')) {
-    content = content.slice(0, -1);
+  // Browsers usually add an extra \n at the end of innerText for the block.
+  // If the last entry is empty, it's that browser "ghost line", so we pop it.
+  if (lines.length > 0 && lines[lines.length - 1] === "") {
+    lines.pop();
   }
 
-  const lines = content.split('\n');
-  const count = lines.length;
+  // Always show at least 1 line
+  const count = Math.max(1, lines.length);
   
   let html = "";
   for (let i = 1; i <= count; i++) {
@@ -351,10 +351,9 @@ editorBox.onscroll = () => {
 
 // Update on every interaction
 editorBox.oninput = updateLineNumbers;
-editorBox.onkeydown = (e) => {
-    // Small delay to allow the browser to process the Enter key
-    setTimeout(updateLineNumbers, 0);
-};
+// Using timeout ensures we catch the state AFTER the browser handles the key
+editorBox.onkeydown = () => setTimeout(updateLineNumbers, 0);
+editorBox.onpaste = () => setTimeout(updateLineNumbers, 0);
 
 /* ---------- LOG SYSTEM ---------- */
 const output = document.getElementById("output");
@@ -604,6 +603,7 @@ document.getElementById("openBtn").onclick = ()=>{
 };
 
 createTab();
+updateLineNumbers();
 log("Executor started");
 
 </script>
