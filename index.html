@@ -357,9 +357,38 @@ function deleteTab(id, el){
 }
 
 /* ---------- BUTTONS ---------- */
-document.getElementById("executeBtn").onclick = ()=>{
-  log(`Executed '${getTabName(currentTab)}'`);
-  alert("Executed!");
+document.getElementById("executeBtn").onclick = async () => {
+    const code = editorBox.innerText;
+    const name = getTabName(currentTab);
+    // Replace with your actual Replit or Server domain
+    const API_BASE = "https://3ea5995c-1090-4c51-9fe6-82555a6f5b96-00-309xspfsl4afn.spock.replit.dev"; 
+
+    if (!realId) {
+        log("Error: Device Script ID not set in Settings.");
+        return;
+    }
+
+    log(`Pushing '${name}' to Cloud...`);
+
+    try {
+        const response = await fetch(`${API_BASE}/api/update-code`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+                id: realId, 
+                script: code 
+            })
+        });
+
+        if (response.ok) {
+            log("Success: Code stored in Database.");
+        } else {
+            const errText = await response.text();
+            log(`Server Error: ${response.status} - ${errText}`);
+        }
+    } catch (err) {
+        log("Connection Error: Check if server is online.");
+    }
 };
 document.getElementById("clearBtn").onclick = ()=>{
   editorBox.innerText="";
