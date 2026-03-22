@@ -21,7 +21,6 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
   background:#111; padding:10px 15px; font-weight:bold;
   display:flex; justify-content:space-between; cursor:move;
   align-items: center;
-  user-select: none;
 }
 
 .settings-toggle {
@@ -37,7 +36,6 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
   display:flex; gap:5px;
   padding:0 5px;
   overflow-x:auto;
-  user-select: none;
 }
 
 .tab {
@@ -46,13 +44,12 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
   border-radius:5px 5px 0 0;
   cursor:pointer;
   display:flex; align-items:center;
-  white-space: nowrap;
 }
 
 .tab.active { background:#3a86ff; }
-.tab-name { pointer-events:auto; font-size: 12px; }
-.delete { margin-left:6px; cursor:pointer; opacity: 0.6; }
-.delete:hover { opacity: 1; }
+
+.tab-name { pointer-events:auto; }
+.delete { margin-left:6px; cursor:pointer; }
 
 .main { display:flex; flex:1; position: relative; overflow: hidden; }
 
@@ -170,6 +167,7 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
 .primary-btn { background: #3a86ff; }
 .primary-btn:hover { background: #2a76ef; }
 
+/* GLOW EFFECT FOR STEP 3 */
 .ready-glow {
     box-shadow: 0 0 15px rgba(58, 134, 255, 0.6);
     border: 1px solid #3a86ff;
@@ -178,86 +176,79 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
 
 .left { flex:1; display:flex; flex-direction:column; overflow: hidden; }
 
-/* FIXED LINE NUMBERS STYLING */
-.editor-wrapper {
-  flex: 1;
+/* LINE NUMBERS STYLING */
+.editor-container {
   display: flex;
+  flex: 1;
   overflow: hidden;
   background: #1e1e1e;
-  position: relative;
 }
 
 #lineNumbers {
-  width: 50px;
+  width: 45px;
   background: #1a1a1a;
   color: #555;
-  padding: 15px 10px 15px 0;
+  padding: 15px 10px;
   text-align: right;
   font-size: 14px;
-  line-height: 1.5; /* MUST MATCH #editorBox */
+  line-height: 1.5;
   user-select: none;
   border-right: 1px solid #333;
   overflow: hidden;
-  flex-shrink: 0;
+  pointer-events: none;
 }
 
+/* UPDATED EDITORBOX FOR SCROLLING */
 #editorBox {
   flex:1;
-  padding: 15px; /* MUST MATCH #lineNumbers padding top/bottom */
+  padding:15px;
   background:#1e1e1e;
   outline:none;
-  overflow: auto;
-  white-space: pre; 
-  font-size: 14px;
-  line-height: 1.5; /* MUST MATCH #lineNumbers */
+  overflow: auto; /* Enables scrollbars */
+  white-space: pre; /* Keeps Lua formatting */
+  font-size:14px;
+  line-height:1.5;
   tab-size: 4;
-  -moz-tab-size: 4;
 }
 
+/* Custom Scrollbar Styling */
 #editorBox::-webkit-scrollbar { width: 10px; height: 10px; }
 #editorBox::-webkit-scrollbar-track { background: #111; }
 #editorBox::-webkit-scrollbar-thumb { background: #333; border-radius: 5px; }
 #editorBox::-webkit-scrollbar-thumb:hover { background: #3a86ff; }
 
-.controls { display:flex; gap:8px; padding:10px; background: #1e1e1e; border-top: 1px solid #333; }
+.controls { display:flex; gap:8px; padding:10px; background: #1e1e1e; }
 
 .controls button {
   background:#2d2d2d;
   border:none;
   color:white;
-  padding:5px 12px;
+  padding:5px 10px;
   cursor:pointer;
-  font-size: 12px;
-  border-radius: 3px;
 }
-.controls button:hover { background: #3c3c3c; }
 
 .output {
-  height:100px;
+  height:80px;
   overflow:auto;
   padding:10px;
-  font-size:12px;
-  background:#151515;
+  font-size:13px;
+  background:#1e1e1e;
   border-top:1px solid #333;
   white-space:pre-wrap;
-  color: #aaa;
 }
 
 .sidebar {
-  width:200px;
+  width:250px;
   background:#2d2d2d;
   padding:10px;
-  border-left: 1px solid #333;
 }
 
 .search-bar input {
   width:100%;
-  padding:6px;
+  padding:5px;
   background:#1e1e1e;
-  border:1px solid #444;
+  border:none;
   color:white;
-  font-size: 12px;
-  border-radius: 3px;
 }
 
 </style>
@@ -302,18 +293,18 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
                 <button id="copyBaseBtn" class="action-btn">Copy Script</button>
                 <button id="copyFullBtn" class="action-btn primary-btn">Copy Script with My ID</button>
             </div>
-            <small style="color:#666; display:block; margin-top:5px; font-size:11px;">Paste the script into your Roblox executor.</small>
+            <small style="color:#666; display:block; margin-top:5px; font-size:11px;">Paste the script with your ID into your Roblox executor.</small>
         </div>
     </div>
 
     <div class="left">
-      <div class="editor-wrapper">
+      <div class="editor-container">
         <div id="lineNumbers">1</div>
         <div id="editorBox" contenteditable="true" spellcheck="false">-- Welcome to AWP.GG!</div>
       </div>
 
       <div class="controls">
-        <button id="executeBtn" style="background: #3a86ff;">Execute</button>
+        <button id="executeBtn">Execute</button>
         <button id="clearBtn">Clear</button>
         <button id="openBtn">Open</button>
         <button id="saveBtn">Save</button>
@@ -325,7 +316,7 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
 
     <div class="sidebar">
       <div class="search-bar">
-        <input placeholder="Search Scripts...">
+        <input placeholder="Search...">
       </div>
     </div>
   </div>
@@ -333,58 +324,51 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
 
 <script>
 
-/* ---------- LINE NUMBER SYSTEM (FIXED) ---------- */
-const editorBox = document.getElementById("editorBox");
-const lineNumbers = document.getElementById("lineNumbers");
-
-function updateLineNumbers() {
-  let text = editorBox.innerText;
-  
-  // FIXED: Browsers add a trailing \n to innerText when typing. 
-  // We remove only the last character if it is a newline to prevent the "ghost line".
-  if (text.endsWith('\n')) {
-    text = text.slice(0, -1);
-  }
-
-  const lines = text.split('\n');
-  const count = Math.max(1, lines.length);
-  
-  let html = "";
-  for (let i = 1; i <= count; i++) {
-    html += `<div>${i}</div>`;
-  }
-  lineNumbers.innerHTML = html;
-}
-
-// Sync Scrolling
-editorBox.onscroll = () => {
-  lineNumbers.scrollTop = editorBox.scrollTop;
-};
-
-// Handle Inputs
-editorBox.oninput = updateLineNumbers;
-
-editorBox.onkeydown = (e) => {
-    // Tab Support
-    if (e.key === "Tab") {
-        e.preventDefault();
-        document.execCommand("insertText", false, "\t");
-    }
-    // Update line numbers after small delay so browser has time to register the key
-    setTimeout(updateLineNumbers, 0);
-};
-
-editorBox.onpaste = () => setTimeout(updateLineNumbers, 0);
-
 /* ---------- LOG SYSTEM ---------- */
 const output = document.getElementById("output");
+
 function log(msg){
   const t = new Date().toLocaleTimeString('en-US',{hour12:false});
   output.textContent += `[${t}] ${msg}\n`;
   output.scrollTop = output.scrollHeight;
 }
 
-/* ---------- SETTINGS LOGIC ---------- */
+/* ---------- LINE NUMBER LOGIC ---------- */
+const lineNumbers = document.getElementById("lineNumbers");
+const editorBox = document.getElementById("editorBox");
+
+function updateLineNumbers() {
+  let content = editorBox.innerText;
+  
+  // Browsers add a phantom \n at the end of innerText. 
+  // If it ends with a newline, we slice it off to get the actual line count.
+  if (content.endsWith('\n')) {
+    content = content.slice(0, -1);
+  }
+
+  const lines = content.split('\n');
+  const count = lines.length;
+  
+  let lineHtml = '';
+  for (let i = 1; i <= count; i++) {
+    lineHtml += i + '<br>';
+  }
+  lineNumbers.innerHTML = lineHtml;
+}
+
+// Sync scrolling and content
+editorBox.addEventListener('scroll', () => {
+  lineNumbers.scrollTop = editorBox.scrollTop;
+});
+
+editorBox.addEventListener('input', updateLineNumbers);
+
+// Use timeout to catch the state after the Enter key has modified the DOM
+editorBox.addEventListener('keydown', () => {
+  setTimeout(updateLineNumbers, 0);
+});
+
+/* ---------- SETTINGS & LOGIC ---------- */
 const settingsBtn = document.getElementById("settingsBtn");
 const settingsView = document.getElementById("settingsView");
 const scriptIdInput = document.getElementById("scriptIdInput");
@@ -393,6 +377,7 @@ const settingHint = document.getElementById("settingHint");
 const genBtn = document.getElementById("genBtn");
 const copyGenBtn = document.getElementById("copyGenBtn");
 const genDisplay = document.getElementById("genDisplay");
+
 const copyBaseBtn = document.getElementById("copyBaseBtn");
 const copyFullBtn = document.getElementById("copyFullBtn");
 
@@ -405,7 +390,9 @@ const LUA_TEMPLATE = `local a="[[ID]]"local b="https://3ea5995c-1090-4c51-9fe6-8
 function generateRandomString(length) {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     let result = "";
-    for (let i = 0; i < length; i++) result += chars.charAt(Math.floor(Math.random() * chars.length));
+    for (let i = 0; i < length; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
     return result;
 }
 
@@ -429,7 +416,10 @@ copyBaseBtn.onclick = () => {
 };
 
 copyFullBtn.onclick = () => {
-    if(!realId) { alert("Please set a Device Script ID first!"); return; }
+    if(!realId) {
+        alert("Please set a Device Script ID first!");
+        return;
+    }
     const script = LUA_TEMPLATE.replace("[[ID]]", realId);
     navigator.clipboard.writeText(script);
     log("Script with ID copied!");
@@ -445,12 +435,14 @@ function lockAndBlur() {
     const val = scriptIdInput.value.trim();
     if(val !== "" && !isHidden) {
         realId = val;
-        scriptIdInput.value = "•".repeat(realId.length);
+        scriptIdInput.value = generateRandomString(realId.length);
         scriptIdInput.classList.add("blurred");
         visibilityToggle.style.display = "block";
         visibilityToggle.textContent = "Show";
         settingHint.textContent = "ID Locked and Masked";
         isHidden = true;
+        
+        // Add Glow to Step 3
         copyFullBtn.classList.add("ready-glow");
         log("Device script id set and masked");
     }
@@ -460,6 +452,7 @@ visibilityToggle.onclick = () => {
     if(isHidden) {
         scriptIdInput.value = realId;
         scriptIdInput.classList.remove("blurred");
+        scriptIdInput.style.pointerEvents = "auto";
         visibilityToggle.textContent = "Hide";
         isHidden = false;
         copyFullBtn.classList.remove("ready-glow");
@@ -468,10 +461,20 @@ visibilityToggle.onclick = () => {
     }
 };
 
-scriptIdInput.onkeydown = e => { if(e.key === "Enter") { lockAndBlur(); scriptIdInput.blur(); } };
-scriptIdInput.onblur = () => { if(!isHidden && scriptIdInput.value.trim() !== "") lockAndBlur(); };
+scriptIdInput.onkeydown = e => {
+    if(e.key === "Enter") {
+        lockAndBlur();
+        scriptIdInput.blur();
+    }
+};
 
-/* ---------- WINDOW DRAG ---------- */
+scriptIdInput.onblur = () => {
+    if(!isHidden && scriptIdInput.value.trim() !== "") {
+        lockAndBlur();
+    }
+};
+
+/* ---------- DRAG ---------- */
 const dragBar = document.getElementById("dragBar");
 const executor = document.getElementById("executor");
 let drag=false, offX, offY;
@@ -490,7 +493,7 @@ document.onmousemove = e=>{
 };
 document.onmouseup = ()=>drag=false;
 
-/* ---------- TABS SYSTEM ---------- */
+/* ---------- TABS ---------- */
 const tabsContainer = document.getElementById("tabs");
 let tabsData = {};
 let currentTab = null;
@@ -540,7 +543,7 @@ function deleteTab(id, el){
   if(next) switchTab(next.dataset.tab,next);
 }
 
-/* ---------- BUTTON ACTIONS ---------- */
+/* ---------- BUTTONS ---------- */
 document.getElementById("executeBtn").onclick = async () => {
     const code = editorBox.innerText;
     const name = getTabName(currentTab);
@@ -552,15 +555,23 @@ document.getElementById("executeBtn").onclick = async () => {
     }
 
     log(`Pushing '${name}' to Cloud...`);
+
     try {
         const response = await fetch(`${API_BASE}/api/update-code`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ id: realId, script: code })
         });
-        if (response.ok) log("Success: Code stored in Database.");
-        else log(`Server Error: ${response.status}`);
-    } catch (err) { log("Connection Error: Check if server is online."); }
+
+        if (response.ok) {
+            log("Success: Code stored in Database.");
+        } else {
+            const errText = await response.text();
+            log(`Server Error: ${response.status} - ${errText}`);
+        }
+    } catch (err) {
+        log("Connection Error: Check if server is online.");
+    }
 };
 
 document.getElementById("clearBtn").onclick = ()=>{
@@ -596,10 +607,8 @@ document.getElementById("openBtn").onclick = ()=>{
   input.click();
 };
 
-// Start Up
-createTab("Main.lua");
-updateLineNumbers();
-log("Executor started. Ready for input.");
+createTab();
+log("Executor started");
 
 </script>
 </body>
