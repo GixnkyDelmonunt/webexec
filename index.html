@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AWP.GG</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="executor">
+    <div class="titlebar" id="dragBar">AWP.GG <span>Scripting ▼</span></div>
+    <div class="tabs">
+      <div class="tab">Untitled Tab ✕</div>
+      <div class="tab">Untitled Tab ✕</div>
+      <div class="tab">Untitled Tab ✕</div>
+      <div class="tab">Untitled Tab ✕</div>
+    </div>
+    <div class="main">
+      <div class="left">
+        <div id="editorBox" contenteditable="true">-- Welcome to AWP.GG!</div>
+        <div class="controls">
+          <button onclick="executeCode()">Execute</button>
+          <button onclick="clearEditor()">Clear</button>
+          <button onclick="alert('Open clicked')">Open</button>
+          <button onclick="executeCode()">Execute</button>
+          <button onclick="alert('Save clicked')">Save</button>
+        </div>
+        <div id="output" class="output">
+          [00:21:42] Test is not a valid member of Model "Workspace.Part"
+        </div>
+      </div>
+      <div class="sidebar">
+        <div class="search-bar">
+          <input type="text" placeholder="Search...">
+        </div>
+        <h3>Workspace</h3>
+        <ul>
+          <li>Infinite Yield.txt</li>
+          <li>Dex Explorer.txt</li>
+        </ul>
+        <h3>⭐ Favorites</h3>
+        <div class="bottom-user">AwpUser123</div>
+      </div>
+    </div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
