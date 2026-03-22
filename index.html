@@ -62,21 +62,22 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
   display: none;
   flex-direction: column;
   padding: 40px;
+  overflow-y: auto;
 }
 
 .settings-header { font-size: 20px; margin-bottom: 5px; color: #3a86ff; font-weight: bold; }
-.settings-sub { font-size: 12px; color: #888; margin-bottom: 25px; }
+.settings-sub { font-size: 12px; color: #888; margin-bottom: 20px; }
 
-.generator-section {
+.generator-section, .copy-section {
     background: #252525;
     padding: 15px;
     border-radius: 5px;
     border: 1px solid #333;
-    margin-bottom: 30px;
-    width: 400px;
+    margin-bottom: 20px;
+    width: 450px;
 }
 
-.gen-controls { display: flex; gap: 10px; margin-bottom: 10px; }
+.gen-controls, .copy-controls { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
 .gen-display { 
     background: #111; 
     padding: 8px; 
@@ -92,7 +93,7 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
     display: flex; 
     flex-direction: column; 
     gap: 10px; 
-    width: 400px; 
+    width: 450px; 
 }
 
 .input-wrapper {
@@ -113,7 +114,6 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
   transition: filter 0.2s ease;
 }
 
-/* Blur Class */
 .blurred {
     filter: blur(5px);
     user-select: none;
@@ -226,7 +226,16 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
                 <input type="text" id="scriptIdInput" class="clean-input" placeholder="Paste ID here to set...">
                 <button id="visibilityToggle" class="toggle-btn" style="display:none;">Show</button>
             </div>
-            <small id="settingHint" style="color:#888">Press Enter to lock and mask</small>
+            <small id="settingHint" style="color:#888; margin-bottom: 20px;">Press Enter to lock and mask</small>
+        </div>
+
+        <div class="settings-header">Loader Script</div>
+        <div class="settings-sub">Copy the Roblox listener script below</div>
+        <div class="copy-section">
+            <div class="copy-controls">
+                <button id="copyBaseBtn" class="action-btn">Copy Script</button>
+                <button id="copyFullBtn" class="action-btn primary-btn">Copy Script with ID</button>
+            </div>
         </div>
     </div>
 
@@ -263,7 +272,7 @@ function log(msg){
   output.scrollTop = output.scrollHeight;
 }
 
-/* ---------- SETTINGS & GENERATOR LOGIC ---------- */
+/* ---------- SETTINGS & LOGIC ---------- */
 const settingsBtn = document.getElementById("settingsBtn");
 const settingsView = document.getElementById("settingsView");
 const scriptIdInput = document.getElementById("scriptIdInput");
@@ -273,9 +282,14 @@ const genBtn = document.getElementById("genBtn");
 const copyGenBtn = document.getElementById("copyGenBtn");
 const genDisplay = document.getElementById("genDisplay");
 
+const copyBaseBtn = document.getElementById("copyBaseBtn");
+const copyFullBtn = document.getElementById("copyFullBtn");
+
 let realId = "";
 let isSettingsOpen = false;
 let isHidden = false;
+
+const LUA_TEMPLATE = `local a="[[ID]]"local b="https://3ea5995c-1090-4c51-9fe6-82555a6f5b96-00-309xspfsl4afn.spock.replit.dev/api/get-code?id="..a;local c=3;local d=""local e={print=function(...)print("[AWP.GG]",...)end,warn=function(...)warn("[AWP.GG]",...)end,clear=function()print(string.rep("\\n",50))end}local f=request or http_request or syn and syn.request or fluxus and fluxus.request;print("------------------------------------------")print("AWP.GG BROWSER-SPOOF ACTIVE")print("------------------------------------------")while true do local g,h=pcall(function()return f({Url=b,Method="GET",Headers={["User-Agent"]="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",["Accept"]="*/*"}})end)if g and h and h.Body then local i=h.Body;if i~=""and i~=d and not string.find(i,"No code found")then if string.find(i,"<!DOCTYPE")or string.find(i,"<html")then warn("⚠️ [REPLIT BLOCK] Still getting the 'Wake Up' page. Try refreshing the Replit tab.")else d=i;print("✅ [SUCCESS] Cloud Script Received!")local j,k=loadstring(i)if j then setfenv(j,setmetatable(e,{__index=getfenv()}))task.spawn(j)else warn("❌ [SYNTAX ERROR] Typo in your website code: "..tostring(k))end end end else warn("⚠️ [CONNECTION ERROR] "..tostring(h))end;task.wait(c)end`;
 
 function generateRandomString(length) {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -286,7 +300,6 @@ function generateRandomString(length) {
     return result;
 }
 
-// Built-in ID Generator
 genBtn.onclick = () => {
     const newId = "DEV-" + generateRandomString(14);
     genDisplay.textContent = newId;
@@ -298,7 +311,25 @@ copyGenBtn.onclick = () => {
     if(id.includes("XXXX")) return;
     navigator.clipboard.writeText(id);
     log("ID copied to clipboard!");
-    alert("Copied: " + id);
+};
+
+// SCRIPT COPYING LOGIC
+copyBaseBtn.onclick = () => {
+    const script = LUA_TEMPLATE.replace("[[ID]]", "YOUR_ID_HERE");
+    navigator.clipboard.writeText(script);
+    log("Base script copied!");
+    alert("Copied base script to clipboard!");
+};
+
+copyFullBtn.onclick = () => {
+    if(!realId) {
+        alert("Please set a Device Script ID first!");
+        return;
+    }
+    const script = LUA_TEMPLATE.replace("[[ID]]", realId);
+    navigator.clipboard.writeText(script);
+    log("Script with ID copied!");
+    alert("Copied script with ID: " + realId);
 };
 
 settingsBtn.onclick = () => {
