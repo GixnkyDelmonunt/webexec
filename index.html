@@ -7,6 +7,8 @@
 
 <!-- ACE EDITOR LIBRARY -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.2/ace.js"></script>
+<!-- ACE BEAUTIFY EXTENSION -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.2/ext-beautify.js"></script>
 
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
@@ -447,6 +449,7 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
       <div class="controls">
         <button id="executeBtn">Execute</button>
         <button id="clearBtn">Clear</button>
+        <button id="formatBtn">Format</button>
         <button id="openBtn">Open</button>
         <button id="saveBtn">Save</button>
         <button id="newTabBtn">+ Tab</button>
@@ -562,6 +565,24 @@ editor.setOptions({
     useSoftTabs: true,
     tabSize: 4
 });
+
+/* ---------- AUTO INDENTION LOGIC ---------- */
+const beautify = ace.require("ace/ext/beautify");
+function autoIndentCode() {
+    beautify.beautify(editor.session);
+}
+
+// Automatically format when code is pasted
+editor.on("paste", () => {
+    setTimeout(autoIndentCode, 50);
+});
+
+// Manual format button
+document.getElementById("formatBtn").onclick = () => {
+    autoIndentCode();
+    log("Code manually formatted and indented");
+    notify("Indentation Corrected");
+};
 
 /* ---------- LOG SYSTEM ---------- */
 const output = document.getElementById("output");
