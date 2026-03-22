@@ -176,6 +176,28 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
 
 .left { flex:1; display:flex; flex-direction:column; overflow: hidden; }
 
+/* LINE NUMBERS STYLING */
+.editor-container {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  background: #1e1e1e;
+}
+
+#lineNumbers {
+  width: 45px;
+  background: #1a1a1a;
+  color: #555;
+  padding: 15px 10px;
+  text-align: right;
+  font-size: 14px;
+  line-height: 1.5;
+  user-select: none;
+  border-right: 1px solid #333;
+  overflow: hidden;
+  pointer-events: none;
+}
+
 /* UPDATED EDITORBOX FOR SCROLLING */
 #editorBox {
   flex:1;
@@ -276,7 +298,10 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
     </div>
 
     <div class="left">
-      <div id="editorBox" contenteditable="true" spellcheck="false">-- Welcome to AWP.GG!</div>
+      <div class="editor-container">
+        <div id="lineNumbers">1</div>
+        <div id="editorBox" contenteditable="true" spellcheck="false">-- Welcome to AWP.GG!</div>
+      </div>
 
       <div class="controls">
         <button id="executeBtn">Execute</button>
@@ -307,6 +332,28 @@ function log(msg){
   output.textContent += `[${t}] ${msg}\n`;
   output.scrollTop = output.scrollHeight;
 }
+
+/* ---------- LINE NUMBER LOGIC ---------- */
+const lineNumbers = document.getElementById("lineNumbers");
+const editorBox = document.getElementById("editorBox");
+
+function updateLineNumbers() {
+  const content = editorBox.innerText;
+  const lines = content.split('\n');
+  const count = content.endsWith('\n') ? lines.length : lines.length;
+  let lineHtml = '';
+  for (let i = 1; i <= count; i++) {
+    lineHtml += i + '<br>';
+  }
+  lineNumbers.innerHTML = lineHtml;
+}
+
+// Sync scrolling and content
+editorBox.addEventListener('scroll', () => {
+  lineNumbers.scrollTop = editorBox.scrollTop;
+});
+
+editorBox.addEventListener('input', updateLineNumbers);
 
 /* ---------- SETTINGS & LOGIC ---------- */
 const settingsBtn = document.getElementById("settingsBtn");
@@ -435,7 +482,6 @@ document.onmouseup = ()=>drag=false;
 
 /* ---------- TABS ---------- */
 const tabsContainer = document.getElementById("tabs");
-const editorBox = document.getElementById("editorBox");
 let tabsData = {};
 let currentTab = null;
 let tabCount = 0;
@@ -473,6 +519,7 @@ function switchTab(id, el){
   document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
   el.classList.add("active");
   editorBox.innerText = tabsData[id] || "";
+  updateLineNumbers();
 }
 
 function deleteTab(id, el){
@@ -516,6 +563,7 @@ document.getElementById("executeBtn").onclick = async () => {
 
 document.getElementById("clearBtn").onclick = ()=>{
   editorBox.innerText="";
+  updateLineNumbers();
   log(`Cleared '${getTabName(currentTab)}'`);
 };
 document.getElementById("newTabBtn").onclick = ()=>createTab();
@@ -538,6 +586,7 @@ document.getElementById("openBtn").onclick = ()=>{
     reader.onload = ev=>{
       createTab(file.name.replace(/\..+/,""));
       editorBox.innerText = ev.target.result;
+      updateLineNumbers();
       log(`Opened '${file.name}'`);
     };
     reader.readAsText(file);
