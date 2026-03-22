@@ -4,17 +4,55 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>AWP.GG</title>
-  <link rel="stylesheet" href="style.css">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family: Consolas, monospace; background-color:#1e1e1e; color:#fff; overflow:hidden; }
+    #executor {
+      position: absolute;
+      top:50px; left:50px;
+      width:900px; height:550px;
+      background:#1e1e1e; border:1px solid #333;
+      display:flex; flex-direction:column; resize:both; overflow:hidden;
+    }
+    .titlebar {
+      background:#111; padding:10px 15px; font-weight:bold;
+      display:flex; justify-content:space-between; cursor:move;
+    }
+    .tabs { background:#2d2d2d; display:flex; padding:0 10px; gap:5px; }
+    .tab {
+      padding:5px 10px; background:#3c3c3c;
+      border-radius:5px 5px 0 0; cursor:pointer; color:#fff;
+    }
+    .tab.active { background:#3a86ff; color:white; }
+    .main { display:flex; flex:1; height:100%; }
+    .left { flex:1; display:flex; flex-direction:column; }
+    #editorBox {
+      flex:1; background:#1e1e1e; color:white;
+      padding:10px; outline:none; overflow:auto;
+      font-size:14px; border-top:1px solid #333; border-bottom:1px solid #333;
+      white-space: pre; tab-size:4; line-height:1.5; font-family:Consolas, monospace;
+    }
+    .controls { display:flex; padding:10px; gap:8px; }
+    .controls button {
+      padding:5px 10px; background:#2d2d2d; border:none; color:white;
+      border-radius:3px; cursor:pointer;
+    }
+    .output { padding:10px; font-size:13px; background:#1e1e1e; color:#e06c75; border-top:1px solid #333; height:50px; overflow:auto; }
+    .sidebar { width:250px; background:#2d2d2d; padding:10px; border-left:1px solid #333; }
+    .search-bar input {
+      width:100%; padding:5px; border:none; background:#1e1e1e; color:white;
+      margin-bottom:10px; border-radius:3px;
+    }
+    .sidebar h3 { margin-top:10px; font-size:14px; }
+    .sidebar ul { list-style:none; padding-left:0; }
+    .sidebar li { padding:5px 0; cursor:pointer; }
+    .bottom-user { margin-top:20px; font-size:12px; color:#ccc; }
+  </style>
 </head>
 <body>
   <div id="executor">
     <div class="titlebar" id="dragBar">AWP.GG <span>Scripting ▼</span></div>
-    <div class="tabs">
-      <div class="tab">Untitled Tab ✕</div>
-      <div class="tab">Untitled Tab ✕</div>
-      <div class="tab">Untitled Tab ✕</div>
-      <div class="tab">Untitled Tab ✕</div>
-    </div>
+    <div class="tabs" id="tabs"></div>
     <div class="main">
       <div class="left">
         <div id="editorBox" contenteditable="true">-- Welcome to AWP.GG!</div>
@@ -22,7 +60,6 @@
           <button onclick="executeCode()">Execute</button>
           <button onclick="clearEditor()">Clear</button>
           <button onclick="alert('Open clicked')">Open</button>
-          <button onclick="executeCode()">Execute</button>
           <button onclick="alert('Save clicked')">Save</button>
         </div>
         <div id="output" class="output">
@@ -43,6 +80,68 @@
       </div>
     </div>
   </div>
-  <script src="script.js"></script>
+  <script>
+    const dragBar = document.getElementById("dragBar");
+    const executor = document.getElementById("executor");
+    let isDragging = false, offsetX, offsetY;
+
+    dragBar.addEventListener("mousedown", e => {
+      isDragging = true;
+      offsetX = e.clientX - executor.offsetLeft;
+      offsetY = e.clientY - executor.offsetTop;
+    });
+    document.addEventListener("mousemove", e => {
+      if (isDragging) {
+        executor.style.left = (e.clientX - offsetX) + "px";
+        executor.style.top = (e.clientY - offsetY) + "px";
+      }
+    });
+    document.addEventListener("mouseup", () => isDragging = false);
+
+    function clearEditor() { document.getElementById("editorBox").innerText = ""; }
+    function executeCode() {
+      const output = document.getElementById("output");
+      output.innerText = '[00:21:42] Test is not a valid member of Model "Workspace.Part"';
+    }
+
+    // --- Tabs ---
+    const tabsContainer = document.getElementById("tabs");
+    const editorBox = document.getElementById("editorBox");
+    let tabsData = {}, currentTab = null, tabCount = 0;
+
+    function createTab(name="Untitled Tab") {
+      tabCount++;
+      const id = "tab"+tabCount;
+      tabsData[id] = "";
+
+      const tab = document.createElement("div");
+      tab.className = "tab"; tab.dataset.tab=id; tab.textContent=name+" ✕";
+      tab.addEventListener("click", ()=>switchTab(id, tab));
+      tab.addEventListener("mousedown", e=>{if(e.button===1) deleteTab(id, tab)});
+      tabsContainer.appendChild(tab);
+      switchTab(id, tab);
+    }
+
+    function switchTab(id, tabEl) {
+      if(currentTab) tabsData[currentTab]=editorBox.innerText;
+      currentTab=id;
+      document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+      tabEl.classList.add("active");
+      editorBox.innerText=tabsData[id]||"";
+    }
+
+    function deleteTab(id, tabEl) {
+      if(Object.keys(tabsData).length<=1) return;
+      delete tabsData[id]; tabEl.remove();
+      const next = tabsContainer.querySelector(".tab"); if(next) switchTab(next.dataset.tab,next);
+    }
+
+    tabsContainer.addEventListener("dblclick", e=>{if(e.target===tabsContainer) createTab();});
+
+    createTab();
+    createTab();
+    createTab();
+    createTab();
+  </script>
 </body>
 </html>
