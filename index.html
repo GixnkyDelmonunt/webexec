@@ -7,8 +7,6 @@
 
 <!-- ACE EDITOR LIBRARY -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.2/ace.js"></script>
-<!-- ACE MINIMAP EXTENSION -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.2/ext-minimap.js"></script>
 
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
@@ -328,7 +326,7 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
   padding:10px;
 }
 
-.search-bar input {
+.search-bar {
   width:100%;
   padding:5px;
   background:#1e1e1e;
@@ -365,14 +363,6 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
 }
 
 .notif.show { transform: translateX(0); }
-
-/* Minimap Toggle Switch Style */
-.settings-checkbox {
-    width: 18px;
-    height: 18px;
-    cursor: pointer;
-    accent-color: #3a86ff;
-}
 
 </style>
 </head>
@@ -437,24 +427,23 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
                 <button id="copyBaseBtn" class="action-btn">Copy Script</button>
                 <button id="copyFullBtn" class="action-btn primary-btn">Copy Script with My ID</button>
             </div>
-            <div style="display: flex; align-items: center; gap: 15px; margin-top: 10px;">
-                <label style="font-size: 12px; color: #aaa;">Script Cooldown (s):</label>
-                <input type="number" id="cooldownInput" class="clean-input" value="2" step="0.5" style="width: 80px; padding: 5px 10px;">
-            </div>
-            <small style="color:#666; display:block; margin-top:10px; font-size:11px;">Paste the script with your ID into your Roblox executor.</small>
+            <small style="color:#666; display:block; margin-top:5px; font-size:11px;">Paste the script with your ID into your Roblox executor.</small>
         </div>
 
-        <div class="step-label">Notification & Editor Settings</div>
+        <div class="step-label">Execution Settings</div>
         <div class="generator-section">
-            <div style="display: flex; flex-direction: column; gap: 15px;">
-                <div style="display: flex; align-items: center; gap: 15px;">
-                    <label style="font-size: 13px; color: #ccc;">Display Duration (ms):</label>
-                    <input type="number" id="notifDelayInput" class="clean-input" value="1500" style="width: 100px; padding: 5px 10px;">
-                </div>
-                <div style="display: flex; align-items: center; gap: 15px;">
-                    <label style="font-size: 13px; color: #ccc;">Mini-map (Right Side):</label>
-                    <input type="checkbox" id="minimapToggle" class="settings-checkbox" checked>
-                </div>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <label style="font-size: 13px; color: #ccc;">Poll Cooldown (s):</label>
+                <input type="number" id="scriptCooldownInput" class="clean-input" value="2" step="0.1" style="width: 100px; padding: 5px 10px;">
+            </div>
+            <small style="color:#666; display:block; margin-top:5px; font-size:11px;">Frequency the script checks the website for new code.</small>
+        </div>
+
+        <div class="step-label">Notification Settings</div>
+        <div class="generator-section">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <label style="font-size: 13px; color: #ccc;">Display Duration (ms):</label>
+                <input type="number" id="notifDelayInput" class="clean-input" value="1500" style="width: 100px; padding: 5px 10px;">
             </div>
         </div>
     </div>
@@ -581,15 +570,8 @@ editor.setOptions({
     enableBasicAutocompletion: true,
     enableLiveAutocompletion: true,
     useSoftTabs: true,
-    tabSize: 4,
-    showGutter: true,
-    minimap: { enabled: true }
+    tabSize: 4
 });
-
-const minimapToggle = document.getElementById("minimapToggle");
-minimapToggle.onchange = () => {
-    editor.setOption("minimap", { enabled: minimapToggle.checked });
-};
 
 /* ---------- AUTO-INDENTION LOGIC ---------- */
 
@@ -674,13 +656,13 @@ const copyGenBtn = document.getElementById("copyGenBtn");
 const genDisplay = document.getElementById("genDisplay");
 const copyBaseBtn = document.getElementById("copyBaseBtn");
 const copyFullBtn = document.getElementById("copyFullBtn");
-const cooldownInput = document.getElementById("cooldownInput");
+const scriptCooldownInput = document.getElementById("scriptCooldownInput");
 
 let realId = "";
 let isSettingsOpen = false;
 let isHidden = false;
 
-const LUA_TEMPLATE = `local a="[[ID]]"local b="https://3ea5995c-1090-4c51-9fe6-82555a6f5b96-00-309xspfsl4afn.spock.replit.dev/api/get-code?id="..a;local c=[[COOLDOWN]];local d=""local e={print=function(...)print("[AWP.GG]",...)end,warn=function(...)warn("[AWP.GG]",...)end,clear=function()print(string.rep("\\n",50))end}local f=request or http_request or syn and syn.request or fluxus and fluxus.request;print("------------------------------------------")print("AWP.GG BROWSER-SPOOF ACTIVE")print("------------------------------------------")while true do local g,h=pcall(function()return f({Url=b,Method="GET",Headers={["User-Agent"]="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",["Accept"]="*/*"}})end)if g and h and h.Body then local i=h.Body;if i~=""and i~=d and not string.find(i,"No code found")then if string.find(i,"<!DOCTYPE")or string.find(i,"<html")then warn("⚠️ [REPLIT BLOCK] Still getting the 'Wake Up' page. Try refreshing the Replit tab.")else d=i;print("✅ [SUCCESS] Cloud Script Received!")local j,k=loadstring(i)if j then setfenv(j,setmetatable(e,{__index=getfenv()}))task.spawn(j)else warn("❌ [SYNTAX ERROR] Typo in your website code: "..tostring(k))end end end else warn("⚠️ [CONNECTION ERROR] "..tostring(h))end;task.wait(c)end`;
+const LUA_TEMPLATE = `local a="[[ID]]"local b="https://3ea5995c-1090-4c51-9fe6-82555a6f5b96-00-309xspfsl4afn.spock.replit.dev/api/get-code?id="..a;local c=3;local d=""local e={print=function(...)print("[AWP.GG]",...)end,warn=function(...)warn("[AWP.GG]",...)end,clear=function()print(string.rep("\\n",50))end}local f=request or http_request or syn and syn.request or fluxus and fluxus.request;print("------------------------------------------")print("AWP.GG BROWSER-SPOOF ACTIVE")print("------------------------------------------")while true do local g,h=pcall(function()return f({Url=b,Method="GET",Headers={["User-Agent"]="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",["Accept"]="*/*"}})end)if g and h and h.Body then local i=h.Body;if i~=""and i~=d and not string.find(i,"No code found")then if string.find(i,"<!DOCTYPE")or string.find(i,"<html")then warn("⚠️ [REPLIT BLOCK] Still getting the 'Wake Up' page. Try refreshing the Replit tab.")else d=i;print("✅ [SUCCESS] Cloud Script Received!")local j,k=loadstring(i)if j then setfenv(j,setmetatable(e,{__index=getfenv()}))task.spawn(j)else warn("❌ [SYNTAX ERROR] Typo in your website code: "..tostring(k))end end end else warn("⚠️ [CONNECTION ERROR] "..tostring(h))end;task.wait(c)end`;
 
 function generateRandomString(length) {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -706,8 +688,7 @@ copyGenBtn.onclick = () => {
 };
 
 copyBaseBtn.onclick = () => {
-    const cd = cooldownInput.value || 2;
-    const script = LUA_TEMPLATE.replace("[[ID]]", "YOUR_ID_HERE").replace("[[COOLDOWN]]", cd);
+    const script = LUA_TEMPLATE.replace("[[ID]]", "YOUR_ID_HERE");
     navigator.clipboard.writeText(script);
     log("Base script copied!");
     notify("Base Script Copied");
@@ -715,8 +696,9 @@ copyBaseBtn.onclick = () => {
 
 copyFullBtn.onclick = () => {
     if(!realId) { notify("Error: Set Script ID first!"); return; }
-    const cd = cooldownInput.value || 2;
-    const script = LUA_TEMPLATE.replace("[[ID]]", realId).replace("[[COOLDOWN]]", cd);
+    const cooldownVal = scriptCooldownInput.value || "2";
+    let script = LUA_TEMPLATE.replace("[[ID]]", realId);
+    script = script.replace("local c=3;", `local c=${cooldownVal};`);
     navigator.clipboard.writeText(script);
     log("Script with ID copied!");
     notify("Script with ID Copied");
