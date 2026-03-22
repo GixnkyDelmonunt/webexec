@@ -51,7 +51,7 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
 .tab-name { pointer-events:auto; }
 .delete { margin-left:6px; cursor:pointer; }
 
-.main { display:flex; flex:1; position: relative; }
+.main { display:flex; flex:1; position: relative; overflow: hidden; }
 
 /* Settings Page View */
 #settingsView {
@@ -61,14 +61,13 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
   z-index: 10;
   display: none;
   flex-direction: column;
-  padding: 40px;
+  padding: 30px 40px;
   overflow-y: auto;
 }
 
 .settings-header { font-size: 20px; margin-bottom: 5px; color: #3a86ff; font-weight: bold; }
 .settings-sub { font-size: 12px; color: #888; margin-bottom: 20px; }
 
-/* STEP LABELS */
 .step-label {
     font-size: 14px;
     font-weight: bold;
@@ -162,25 +161,41 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
     cursor: pointer;
     font-size: 12px;
     border-radius: 4px;
+    transition: all 0.3s ease;
 }
 .action-btn:hover { background: #444; }
 .primary-btn { background: #3a86ff; }
 .primary-btn:hover { background: #2a76ef; }
 
-.left { flex:1; display:flex; flex-direction:column; }
-
-#editorBox {
-  flex:1;
-  padding:10px;
-  background:#1e1e1e;
-  outline:none;
-  overflow:auto;
-  white-space:pre;
-  font-size:14px;
-  line-height:1.5;
+/* GLOW EFFECT FOR STEP 3 */
+.ready-glow {
+    box-shadow: 0 0 15px rgba(58, 134, 255, 0.6);
+    border: 1px solid #3a86ff;
+    transform: scale(1.02);
 }
 
-.controls { display:flex; gap:8px; padding:10px; }
+.left { flex:1; display:flex; flex-direction:column; overflow: hidden; }
+
+/* UPDATED EDITORBOX FOR SCROLLING */
+#editorBox {
+  flex:1;
+  padding:15px;
+  background:#1e1e1e;
+  outline:none;
+  overflow: auto; /* Enables scrollbars */
+  white-space: pre; /* Keeps Lua formatting */
+  font-size:14px;
+  line-height:1.5;
+  tab-size: 4;
+}
+
+/* Custom Scrollbar Styling */
+#editorBox::-webkit-scrollbar { width: 10px; height: 10px; }
+#editorBox::-webkit-scrollbar-track { background: #111; }
+#editorBox::-webkit-scrollbar-thumb { background: #333; border-radius: 5px; }
+#editorBox::-webkit-scrollbar-thumb:hover { background: #3a86ff; }
+
+.controls { display:flex; gap:8px; padding:10px; background: #1e1e1e; }
 
 .controls button {
   background:#2d2d2d;
@@ -261,7 +276,7 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
     </div>
 
     <div class="left">
-      <div id="editorBox" contenteditable="true">-- Welcome to AWP.GG!</div>
+      <div id="editorBox" contenteditable="true" spellcheck="false">-- Welcome to AWP.GG!</div>
 
       <div class="controls">
         <button id="executeBtn">Execute</button>
@@ -334,12 +349,10 @@ copyGenBtn.onclick = () => {
     log("ID copied to clipboard!");
 };
 
-// SCRIPT COPYING LOGIC
 copyBaseBtn.onclick = () => {
     const script = LUA_TEMPLATE.replace("[[ID]]", "YOUR_ID_HERE");
     navigator.clipboard.writeText(script);
     log("Base script copied!");
-    alert("Copied base script to clipboard!");
 };
 
 copyFullBtn.onclick = () => {
@@ -350,7 +363,6 @@ copyFullBtn.onclick = () => {
     const script = LUA_TEMPLATE.replace("[[ID]]", realId);
     navigator.clipboard.writeText(script);
     log("Script with ID copied!");
-    alert("Copied script with ID: " + realId);
 };
 
 settingsBtn.onclick = () => {
@@ -369,6 +381,9 @@ function lockAndBlur() {
         visibilityToggle.textContent = "Show";
         settingHint.textContent = "ID Locked and Masked";
         isHidden = true;
+        
+        // Add Glow to Step 3
+        copyFullBtn.classList.add("ready-glow");
         log("Device script id set and masked");
     }
 }
@@ -380,6 +395,7 @@ visibilityToggle.onclick = () => {
         scriptIdInput.style.pointerEvents = "auto";
         visibilityToggle.textContent = "Hide";
         isHidden = false;
+        copyFullBtn.classList.remove("ready-glow");
     } else {
         lockAndBlur();
     }
@@ -449,7 +465,6 @@ function createTab(name="Untitled"){
   tabsContainer.appendChild(tab);
   switchTab(id, tab);
   tabsContainer.scrollLeft = tabsContainer.scrollWidth;
-  log(`Created tab '${name}'`);
 }
 
 function switchTab(id, el){
