@@ -873,9 +873,35 @@ editorBox.addEventListener("drop", (e) => {
     }
 });
 
+/* ---------- KEYBOARD SHORTCUTS ---------- */
+window.addEventListener('keydown', function(e) {
+    if (e.ctrlKey) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            document.getElementById("executeBtn").click();
+        }
+        if (e.key.toLowerCase() === 's') {
+            e.preventDefault();
+            document.getElementById("saveBtn").click();
+        }
+        if (e.key.toLowerCase() === 't') {
+            e.preventDefault();
+            document.getElementById("newTabBtn").click();
+        }
+        if (e.key.toLowerCase() === 'w') {
+            e.preventDefault();
+            const activeTabEl = tabsContainer.querySelector(`.tab.active`);
+            if (activeTabEl) {
+                const id = activeTabEl.dataset.tab;
+                deleteTab(id, activeTabEl);
+            }
+        }
+    }
+});
+
 createTab();
 log("Executor started");
 
 </script>
 </body>
-</html>
+</html>```
