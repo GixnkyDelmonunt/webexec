@@ -442,6 +442,27 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
                 <input type="number" id="notifDelayInput" class="clean-input" value="1500" style="width: 100px; padding: 5px 10px;">
             </div>
         </div>
+
+        <!-- THEME ENGINE SECTION -->
+        <div class="step-label">Theme Engine</div>
+        <div class="generator-section">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <label style="font-size: 13px; color: #ccc;">Editor Theme:</label>
+                <select id="themeSelect" class="clean-input" style="width: 200px; padding: 5px 10px; appearance: auto;">
+                    <option value="ace/theme/monokai">Monokai (Default)</option>
+                    <option value="ace/theme/dracula">Dracula</option>
+                    <option value="ace/theme/nord_dark">Nord Dark</option>
+                    <option value="ace/theme/tomorrow_night">Tomorrow Night</option>
+                    <option value="ace/theme/tomorrow_night_eighties">Tomorrow Night 80s</option>
+                    <option value="ace/theme/tomorrow_night_blue">Tomorrow Night Blue</option>
+                    <option value="ace/theme/tomorrow_night_bright">Tomorrow Night Bright</option>
+                    <option value="ace/theme/cobalt">Cobalt</option>
+                    <option value="ace/theme/terminal">Terminal</option>
+                    <option value="ace/theme/twilight">Twilight</option>
+                    <option value="ace/theme/vibrant_ink">Vibrant Ink</option>
+                </select>
+            </div>
+        </div>
     </div>
 
     <div class="left">
@@ -592,6 +613,15 @@ const genDisplay = document.getElementById("genDisplay");
 const copyBaseBtn = document.getElementById("copyBaseBtn");
 const copyFullBtn = document.getElementById("copyFullBtn");
 const scriptCooldownInput = document.getElementById("scriptCooldownInput");
+
+/* THEME ENGINE LOGIC */
+const themeSelect = document.getElementById("themeSelect");
+ace.config.set("basePath", "https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.2/");
+themeSelect.onchange = () => {
+    editor.setTheme(themeSelect.value);
+    log(`Theme changed to ${themeSelect.value.split('/').pop()}`);
+    notify(`Theme Updated`);
+};
 
 let realId = "";
 let isSettingsOpen = false;
@@ -904,4 +934,4 @@ log("Executor started");
 
 </script>
 </body>
-</html>```
+</html>
