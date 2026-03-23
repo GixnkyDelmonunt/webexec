@@ -266,6 +266,41 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
   font-size:14px;
 }
 
+/* CUSTOM MINIMAP STYLES */
+#customMinimap {
+    width: 80px;
+    height: 100%;
+    background: #1a1a1a;
+    border-left: 1px solid #333;
+    overflow: hidden;
+    position: relative;
+    user-select: none;
+    pointer-events: none;
+}
+
+#minimapContent {
+    font-size: 3px;
+    line-height: 3.5px;
+    color: rgba(255, 255, 255, 0.15);
+    white-space: pre;
+    padding: 5px 2px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1000px; /* Oversized width to prevent wrapping */
+}
+
+#minimapViewport {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(58, 134, 255, 0.1);
+    border-top: 1px solid rgba(58, 134, 255, 0.3);
+    border-bottom: 1px solid rgba(58, 134, 255, 0.3);
+    z-index: 2;
+}
+
 /* Custom Ace Theme Overrides for VS Dark Look */
 .ace_editor {
     background-color: #1e1e1e !important;
@@ -468,6 +503,11 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
     <div class="left">
       <div class="editor-container">
         <div id="editorBox">-- Welcome to AWP.GG!</div>
+        <!-- MINIMAP CONTAINER -->
+        <div id="customMinimap">
+            <div id="minimapContent"></div>
+            <div id="minimapViewport"></div>
+        </div>
       </div>
 
       <div class="controls">
@@ -538,6 +578,7 @@ sizeBtn.onclick = () => {
         sizeBtn.title = "Small Window";
     }
     editor.resize();
+    updateMinimap();
 };
 
 minBtn.onclick = () => {
@@ -558,6 +599,7 @@ minBtn.onclick = () => {
         }
     }
     editor.resize();
+    updateMinimap();
 };
 
 closeBtn.onclick = () => {
@@ -588,6 +630,42 @@ editor.setOptions({
     useSoftTabs: true,
     tabSize: 4
 });
+
+/* ---------- MINIMAP LOGIC ---------- */
+const mContent = document.getElementById("minimapContent");
+const mViewport = document.getElementById("minimapViewport");
+const mScale = 3.5; // Matches line-height in CSS
+
+function updateMinimap() {
+    mContent.textContent = editor.getValue();
+    syncMinimapViewport();
+}
+
+function syncMinimapViewport() {
+    const session = editor.getSession();
+    const firstRow = editor.renderer.getFirstVisibleRow();
+    const lastRow = editor.renderer.getLastVisibleRow();
+    const totalRows = session.getLength();
+    
+    // Position the highlight box
+    mViewport.style.top = (firstRow * mScale) + "px";
+    mViewport.style.height = ((lastRow - firstRow + 1) * mScale) + "px";
+    
+    // Optional: Scroll the minimap content if the file is very long
+    const containerHeight = document.getElementById("customMinimap").clientHeight;
+    const contentHeight = mContent.scrollHeight;
+    
+    if (contentHeight > containerHeight) {
+        const scrollPercent = firstRow / totalRows;
+        mContent.style.top = -(scrollPercent * (contentHeight - containerHeight)) + "px";
+        mViewport.style.top = (firstRow * mScale) + parseInt(mContent.style.top || 0) + "px";
+    } else {
+        mContent.style.top = "0px";
+    }
+}
+
+editor.on("change", updateMinimap);
+editor.getSession().on("changeScrollTop", syncMinimapViewport);
 
 /* ---------- LOG SYSTEM ---------- */
 const output = document.getElementById("output");
@@ -826,6 +904,7 @@ function switchTab(id, el){
   document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
   el.classList.add("active");
   editor.setValue(tabsData[id] || "", -1);
+  updateMinimap();
 }
 
 function deleteTab(id, el){
@@ -854,7 +933,7 @@ document.getElementById("executeBtn").onclick = async () => {
     } catch (err) { log("Connection Error."); notify("Connection Failed"); }
 };
 
-document.getElementById("clearBtn").onclick = ()=>{ editor.setValue(""); log(`Cleared current tab`); notify("Editor Cleared"); };
+document.getElementById("clearBtn").onclick = ()=>{ editor.setValue(""); log(`Cleared current tab`); notify("Editor Cleared"); updateMinimap(); };
 document.getElementById("newTabBtn").onclick = ()=>createTab();
 document.getElementById("saveBtn").onclick = ()=>{
   const name = getTabName(currentTab) + ".lua";
@@ -870,7 +949,7 @@ document.getElementById("openBtn").onclick = ()=>{
     const file=e.target.files[0];
     if(!file) return;
     const reader=new FileReader();
-    reader.onload = ev=>{ createTab(file.name.replace(/\..+/,"")); editor.setValue(ev.target.result, -1); notify(`Opened ${file.name}`); };
+    reader.onload = ev=>{ createTab(file.name.replace(/\..+/,"")); editor.setValue(ev.target.result, -1); notify(`Opened ${file.name}`); updateMinimap(); };
     reader.readAsText(file);
   };
   input.click();
@@ -896,6 +975,7 @@ editorBox.addEventListener("drop", (e) => {
             editor.setValue(ev.target.result, -1);
             notify(`Dropped & Opened ${file.name}`);
             log(`Opened file via drop: ${file.name}`);
+            updateMinimap();
         };
         reader.readAsText(file);
     } else if (file) {
