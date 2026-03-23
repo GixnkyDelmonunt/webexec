@@ -400,12 +400,45 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
 
 .notif.show { transform: translateX(0); }
 
+/* CONTEXT MENU STYLES */
+.context-menu {
+    position: fixed;
+    background: #252525;
+    border: 1px solid #444;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    z-index: 10001;
+    display: none;
+    min-width: 150px;
+    padding: 5px 0;
+    border-radius: 4px;
+}
+
+.context-menu-item {
+    padding: 8px 15px;
+    cursor: pointer;
+    font-size: 12px;
+    color: #ccc;
+    transition: background 0.2s, color 0.2s;
+}
+
+.context-menu-item:hover {
+    background: #3a86ff;
+    color: white;
+}
+
 </style>
 </head>
 
 <body>
 
 <div id="notification-container"></div>
+
+<!-- Tab Context Menu -->
+<div id="tabContextMenu" class="context-menu">
+    <div class="context-menu-item" id="ctxDuplicate">Duplicate</div>
+    <div class="context-menu-item" id="ctxCopyPath">Copy Path</div>
+    <div class="context-menu-item" id="ctxCloseOthers">Close Others</div>
+</div>
 
 <!-- Custom Close Confirmation UI -->
 <div id="closeOverlay">
@@ -806,6 +839,45 @@ document.onmouseup = ()=>{
     executor.classList.remove("dragging");
 };
 
+/* ---------- CONTEXT MENU LOGIC ---------- */
+const contextMenu = document.getElementById("tabContextMenu");
+let ctxTargetTabId = null;
+
+window.addEventListener("click", () => {
+    contextMenu.style.display = "none";
+});
+
+document.getElementById("ctxDuplicate").onclick = () => {
+    if(!ctxTargetTabId) return;
+    const name = getTabName(ctxTargetTabId);
+    const content = tabsData[ctxTargetTabId] || "";
+    createTab(name + " (Copy)");
+    editor.setValue(content, -1);
+    notify("Tab Duplicated");
+};
+
+document.getElementById("ctxCopyPath").onclick = () => {
+    if(!ctxTargetTabId) return;
+    const name = getTabName(ctxTargetTabId);
+    const mockPath = `AwpGG:/scripts/${name}.lua`;
+    navigator.clipboard.writeText(mockPath);
+    notify("Mock Path Copied");
+};
+
+document.getElementById("ctxCloseOthers").onclick = () => {
+    if(!ctxTargetTabId) return;
+    const allTabs = Array.from(tabsContainer.querySelectorAll(".tab"));
+    allTabs.forEach(t => {
+        const id = t.dataset.tab;
+        if(id !== ctxTargetTabId) {
+            delete tabsData[id];
+            t.remove();
+        }
+    });
+    switchTab(ctxTargetTabId, tabsContainer.querySelector(`[data-tab="${ctxTargetTabId}"]`));
+    notify("Other tabs closed");
+};
+
 /* ---------- TABS ---------- */
 const tabsContainer = document.getElementById("tabs");
 let tabsData = {};
@@ -833,6 +905,15 @@ function createTab(name="Untitled"){
   tab.onclick = e=>{ if(e.target!==del) switchTab(id, tab); };
   del.onclick = e=>{ e.stopPropagation(); log(`Deleted tab '${nameSpan.textContent}'`); deleteTab(id, tab); };
   
+  // Tab Context Menu Trigger
+  tab.oncontextmenu = e => {
+      e.preventDefault();
+      ctxTargetTabId = id;
+      contextMenu.style.display = "block";
+      contextMenu.style.left = e.clientX + "px";
+      contextMenu.style.top = e.clientY + "px";
+  };
+
   // Drag and Drop Handlers for Reordering
   tab.addEventListener('dragstart', (e) => {
     draggedTabElement = tab;
