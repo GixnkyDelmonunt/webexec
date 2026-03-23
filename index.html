@@ -572,7 +572,11 @@ editor.setOptions({
 const output = document.getElementById("output");
 function log(msg){
   const t = new Date().toLocaleTimeString('en-US',{hour12:false});
-  output.textContent += `[${t}] ${msg}\n`;
+  const entry = document.createElement("div");
+  entry.textContent = `[${t}] ${msg}`;
+  if(msg.includes("Error")) entry.style.color = "#ff4d4d";
+  if(msg.includes("Success")) entry.style.color = "#4dff4d";
+  output.appendChild(entry);
   output.scrollTop = output.scrollHeight;
 }
 
@@ -874,4 +878,4 @@ log("Executor started");
 
 </script>
 </body>
-</html>```
+</html>
