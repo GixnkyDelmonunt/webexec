@@ -842,6 +842,33 @@ document.getElementById("openBtn").onclick = ()=>{
   input.click();
 };
 
+/* ---------- FILE DROP SUPPORT ---------- */
+const editorBox = document.getElementById("editorBox");
+
+editorBox.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+});
+
+editorBox.addEventListener("drop", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const file = e.dataTransfer.files[0];
+    if (file && (file.name.endsWith(".lua") || file.name.endsWith(".txt"))) {
+        const reader = new FileReader();
+        reader.onload = ev => {
+            createTab(file.name.replace(/\..+/, ""));
+            editor.setValue(ev.target.result, -1);
+            notify(`Dropped & Opened ${file.name}`);
+            log(`Opened file via drop: ${file.name}`);
+        };
+        reader.readAsText(file);
+    } else if (file) {
+        notify("Only .lua or .txt files allowed");
+    }
+});
+
 createTab();
 log("Executor started");
 
