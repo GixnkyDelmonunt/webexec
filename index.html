@@ -84,6 +84,7 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
   border-radius:5px 5px 0 0;
   cursor:pointer;
   display:flex; align-items:center;
+  user-select: none; /* Added to prevent text selection during drag */
 }
 
 .tab.active { background:#3a86ff; }
@@ -698,6 +699,7 @@ const tabsContainer = document.getElementById("tabs");
 let tabsData = {};
 let currentTab = null;
 let tabCount = 0;
+let draggedTabElement = null; // Reference for reordering
 
 function getTabName(id){
   const el = tabsContainer.querySelector(`[data-tab="${id}"]`);
@@ -711,6 +713,7 @@ function createTab(name="Untitled"){
   const tab=document.createElement("div");
   tab.className="tab";
   tab.dataset.tab=id;
+  tab.draggable = true; // Enable dragging
   tab.innerHTML = `<span class="tab-name">${name}</span><span class="delete">✕</span>`;
   const nameSpan = tab.querySelector(".tab-name");
   const del = tab.querySelector(".delete");
@@ -718,6 +721,39 @@ function createTab(name="Untitled"){
   tab.onclick = e=>{ if(e.target!==del) switchTab(id, tab); };
   del.onclick = e=>{ e.stopPropagation(); log(`Deleted tab '${nameSpan.textContent}'`); deleteTab(id, tab); };
   
+  // Drag and Drop Handlers for Reordering
+  tab.addEventListener('dragstart', (e) => {
+    draggedTabElement = tab;
+    e.dataTransfer.effectAllowed = 'move';
+    tab.style.opacity = '0.5';
+  });
+
+  tab.addEventListener('dragend', () => {
+    tab.style.opacity = '1';
+    draggedTabElement = null;
+  });
+
+  tab.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  });
+
+  tab.addEventListener('drop', (e) => {
+    e.stopPropagation();
+    if (draggedTabElement && draggedTabElement !== tab) {
+        const children = Array.from(tabsContainer.children);
+        const fromIdx = children.indexOf(draggedTabElement);
+        const toIdx = children.indexOf(tab);
+
+        if (fromIdx < toIdx) {
+            tabsContainer.insertBefore(draggedTabElement, tab.nextSibling);
+        } else {
+            tabsContainer.insertBefore(draggedTabElement, tab);
+        }
+    }
+    return false;
+  });
+
   // Built-in Inline Renaming
   nameSpan.ondblclick = (e)=>{
     e.stopPropagation();
@@ -811,4 +847,4 @@ log("Executor started");
 
 </script>
 </body>
-</html>
+</html>```
