@@ -266,22 +266,6 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
   font-size:14px;
 }
 
-/* MINIMAP STYLING */
-#minimap {
-    position: absolute;
-    right: 0;
-    top: 0;
-    width: 100px;
-    height: 100%;
-    z-index: 5;
-    background: #1e1e1e;
-    border-left: 1px solid #333;
-    pointer-events: none; /* Make it non-interactive decoration */
-    opacity: 0.5;
-}
-/* Hide scrollbars for the minimap specifically */
-#minimap .ace_scrollbar { display: none !important; }
-
 /* Custom Ace Theme Overrides for VS Dark Look */
 .ace_editor {
     background-color: #1e1e1e !important;
@@ -484,8 +468,6 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
     <div class="left">
       <div class="editor-container">
         <div id="editorBox">-- Welcome to AWP.GG!</div>
-        <!-- MINIMAP CONTAINER -->
-        <div id="minimap"></div>
       </div>
 
       <div class="controls">
@@ -556,7 +538,6 @@ sizeBtn.onclick = () => {
         sizeBtn.title = "Small Window";
     }
     editor.resize();
-    minimap.resize();
 };
 
 minBtn.onclick = () => {
@@ -577,7 +558,6 @@ minBtn.onclick = () => {
         }
     }
     editor.resize();
-    minimap.resize();
 };
 
 closeBtn.onclick = () => {
@@ -609,30 +589,6 @@ editor.setOptions({
     tabSize: 4
 });
 
-/* ---------- MINIMAP INITIALIZATION ---------- */
-const minimap = ace.edit("minimap");
-minimap.setTheme("ace/theme/monokai");
-minimap.session.setMode("ace/mode/lua");
-minimap.setOptions({
-    readOnly: true,
-    highlightActiveLine: false,
-    showGutter: false,
-    showPrintMargin: false,
-    fontSize: "3px", // Scaled down text for minimap effect
-    fontFamily: "Consolas, monospace",
-    cursorStyle: "hide",
-    selectionStyle: "hide"
-});
-// Syncing Logic
-editor.getSession().on('change', () => {
-    minimap.setValue(editor.getValue(), -1);
-});
-editor.getSession().on('changeScrollTop', (scrollTop) => {
-    // Sync scroll based on line height ratio
-    const ratio = minimap.renderer.lineHeight / editor.renderer.lineHeight;
-    minimap.getSession().setScrollTop(scrollTop * ratio);
-});
-
 /* ---------- LOG SYSTEM ---------- */
 const output = document.getElementById("output");
 function log(msg){
@@ -662,10 +618,8 @@ const scriptCooldownInput = document.getElementById("scriptCooldownInput");
 const themeSelect = document.getElementById("themeSelect");
 ace.config.set("basePath", "https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.2/");
 themeSelect.onchange = () => {
-    const themePath = themeSelect.value;
-    editor.setTheme(themePath);
-    minimap.setTheme(themePath); // Keep minimap in sync
-    log(`Theme changed to ${themePath.split('/').pop()}`);
+    editor.setTheme(themeSelect.value);
+    log(`Theme changed to ${themeSelect.value.split('/').pop()}`);
     notify(`Theme Updated`);
 };
 
@@ -694,7 +648,7 @@ copyGenBtn.onclick = () => {
     if(id.includes("XXXX")) return;
     navigator.clipboard.writeText(id);
     log("ID copied to clipboard!");
-    notify("ID Coopied to Clipboard");
+    notify("ID Copied to Clipboard");
     genDisplay.textContent = "DEV-XXXXXXXXXXXXXX";
 };
 
@@ -872,7 +826,6 @@ function switchTab(id, el){
   document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
   el.classList.add("active");
   editor.setValue(tabsData[id] || "", -1);
-  minimap.setValue(tabsData[id] || "", -1); // Update minimap content
 }
 
 function deleteTab(id, el){
@@ -901,12 +854,7 @@ document.getElementById("executeBtn").onclick = async () => {
     } catch (err) { log("Connection Error."); notify("Connection Failed"); }
 };
 
-document.getElementById("clearBtn").onclick = ()=>{ 
-    editor.setValue(""); 
-    minimap.setValue(""); 
-    log(`Cleared current tab`); 
-    notify("Editor Cleared"); 
-};
+document.getElementById("clearBtn").onclick = ()=>{ editor.setValue(""); log(`Cleared current tab`); notify("Editor Cleared"); };
 document.getElementById("newTabBtn").onclick = ()=>createTab();
 document.getElementById("saveBtn").onclick = ()=>{
   const name = getTabName(currentTab) + ".lua";
