@@ -48,6 +48,15 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
 
 .title-left { display: flex; align-items: center; gap: 15px; }
 
+/* Sidebar Toggle Icon */
+#sidebarToggle {
+    cursor: pointer;
+    font-size: 20px;
+    color: #888;
+    transition: color 0.2s;
+}
+#sidebarToggle:hover { color: white; }
+
 .window-controls {
     display: flex;
     gap: 15px;
@@ -128,16 +137,28 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
 .close-modal p { color: #888; margin-bottom: 20px; font-size: 14px; }
 .modal-btns { display: flex; gap: 10px; justify-content: center; }
 
-/* Settings Page View */
+/* Settings Page View - Updated with Transitions */
 #settingsView {
   position: absolute;
   top: 0; left: 0; width: 100%; height: 100%;
   background: #1e1e1e;
   z-index: 10;
-  display: none;
+  display: flex; /* Changed from none to flex */
   flex-direction: column;
   padding: 30px 40px;
   overflow-y: auto;
+  
+  /* Transition Logic */
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-20px);
+  transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+#settingsView.active {
+    opacity: 1;
+    pointer-events: all;
+    transform: translateY(0);
 }
 
 .settings-header { font-size: 20px; margin-bottom: 5px; color: #3a86ff; font-weight: bold; }
@@ -356,10 +377,20 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
   white-space:pre-wrap;
 }
 
+/* Sidebar Updated with Transitions */
 .sidebar {
   width:250px;
   background:#2d2d2d;
   padding:10px;
+  overflow: hidden;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s ease, opacity 0.2s ease;
+}
+
+.sidebar.collapsed {
+    width: 0;
+    padding-left: 0;
+    padding-right: 0;
+    opacity: 0;
 }
 
 .search-bar input {
@@ -455,6 +486,7 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
 <div id="executor">
   <div class="titlebar" id="dragBar">
     <div class="title-left">
+        <span id="sidebarToggle" title="Toggle Sidebar">≡</span>
         <span>AWP.GG</span>
         <span class="settings-toggle" id="settingsBtn">⚙</span>
     </div>
@@ -725,6 +757,14 @@ const copyBaseBtn = document.getElementById("copyBaseBtn");
 const copyFullBtn = document.getElementById("copyFullBtn");
 const scriptCooldownInput = document.getElementById("scriptCooldownInput");
 
+/* SIDEBAR TOGGLE LOGIC */
+const sidebar = document.querySelector(".sidebar");
+const sidebarToggle = document.getElementById("sidebarToggle");
+sidebarToggle.onclick = () => {
+    sidebar.classList.toggle("collapsed");
+    setTimeout(() => editor.resize(), 300); // Sync editor size after animation
+};
+
 /* THEME ENGINE LOGIC */
 const themeSelect = document.getElementById("themeSelect");
 ace.config.set("basePath", "https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.2/");
@@ -782,7 +822,7 @@ copyFullBtn.onclick = () => {
 
 settingsBtn.onclick = () => {
     isSettingsOpen = !isSettingsOpen;
-    settingsView.style.display = isSettingsOpen ? "flex" : "none";
+    settingsView.classList.toggle("active"); // Updated to use class toggle for animation
     settingsBtn.textContent = isSettingsOpen ? "✕" : "⚙";
 };
 
@@ -822,7 +862,7 @@ scriptIdInput.onblur = () => { if(!isHidden && scriptIdInput.value.trim() !== ""
 const dragBar = document.getElementById("dragBar");
 let drag=false, offX, offY;
 dragBar.onmousedown = e=>{
-  if(!isSmall || e.target.closest('.win-btn') || e.target === settingsBtn) return;
+  if(!isSmall || e.target.closest('.win-btn') || e.target === settingsBtn || e.target === sidebarToggle) return;
   drag=true;
   executor.classList.add("dragging");
   offX = e.clientX - executor.offsetLeft;
