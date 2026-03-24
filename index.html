@@ -815,8 +815,8 @@ editor.on("change", updateStatusBar);
 async function checkApiConnection() {
     const API_BASE = "https://3ea5995c-1090-4c51-9fe6-82555a6f5b96-00-309xspfsl4afn.spock.replit.dev";
     try {
-        // Just pinging the endpoint with a dummy ID to check if server is responsive
-        const res = await fetch(`${API_BASE}/api/get-code?id=ping`, { method: "GET", mode: 'no-cors' });
+        const res = await fetch(`${API_BASE}/api/get-code?id=ping`);
+        if (!res.ok) throw new Error();
         apiStatus.textContent = "Online";
         apiStatus.style.color = "#4dff4d";
     } catch (e) {
