@@ -565,6 +565,15 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
             </div>
         </div>
 
+        <!-- MINIMAP TOGGLE SECTION -->
+        <div class="step-label">Editor Features</div>
+        <div class="generator-section">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <label style="font-size: 13px; color: #ccc;">Show Minimap:</label>
+                <input type="checkbox" id="minimapToggle" checked style="width: 18px; height: 18px; cursor: pointer;">
+            </div>
+        </div>
+
         <!-- EXPORT SETTINGS -->
         <div class="step-label">Export Settings</div>
         <div class="generator-section">
@@ -745,14 +754,18 @@ ace.require("ace/ext/language_tools").addCompleter({
 /* ---------- MINIMAP LOGIC ---------- */
 const mContent = document.getElementById("minimapContent");
 const mViewport = document.getElementById("minimapViewport");
+const minimapToggle = document.getElementById("minimapToggle");
+const customMinimap = document.getElementById("customMinimap");
 const mScale = 3.5; // Matches line-height in CSS
 
 function updateMinimap() {
+    if (customMinimap.style.display === "none") return;
     mContent.textContent = editor.getValue();
     syncMinimapViewport();
 }
 
 function syncMinimapViewport() {
+    if (customMinimap.style.display === "none") return;
     const session = editor.getSession();
     const firstRow = editor.renderer.getFirstVisibleRow();
     const lastRow = editor.renderer.getLastVisibleRow();
@@ -774,6 +787,13 @@ function syncMinimapViewport() {
         mContent.style.top = "0px";
     }
 }
+
+minimapToggle.onchange = () => {
+    customMinimap.style.display = minimapToggle.checked ? "block" : "none";
+    editor.resize();
+    updateMinimap();
+    notify(`Minimap ${minimapToggle.checked ? 'Enabled' : 'Disabled'}`);
+};
 
 editor.on("change", updateMinimap);
 editor.getSession().on("changeScrollTop", syncMinimapViewport);
