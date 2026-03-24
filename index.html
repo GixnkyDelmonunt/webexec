@@ -933,7 +933,8 @@ let realId = "";
 let isSettingsOpen = false;
 let isHidden = false;
 
-const LUA_TEMPLATE = `local a="[[ID]]"local b="https://3ea5995c-1090-4c51-9fe6-82555a6f5b96-00-309xspfsl4afn.spock.replit.dev/api/get-code?id="..a;local c=[[WAIT]];local d=""local e={print=function(...)print("[AWP.GG]",...)end,warn=function(...)warn("[AWP.GG]",...)end,clear=function()print(string.rep("\\n",50))end}local f=request or http_request or syn and syn.request or fluxus and fluxus.request;print("------------------------------------------")print("AWP.GG BROWSER-SPOOF ACTIVE")print("------------------------------------------")while true do local g,h=pcall(function()return f({Url=b,Method="GET",Headers={["User-Agent"]="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",["Accept"]="*/*"}})end)if g and h and h.Body then local i=h.Body;if i~=""and i~=d and not string.find(i,"No code found")then if string.find(i,"<!DOCTYPE")or string.find(i,"<html")then warn("⚠️ [REPLIT BLOCK] Still getting the 'Wake Up' page. Try refreshing the Replit tab.")else d=i;print("✅ [SUCCESS] Cloud Script Received!")local j,k=loadstring(i)if j then setfenv(j,setmetatable(e,{__index=getfenv()}))task.spawn(j)else warn("❌ [SYNTAX ERROR] Typo in your website code: "..tostring(k))end end end else warn("⚠️ [CONNECTION ERROR] "..tostring(h))end;task.wait(c)end`;
+// UPDATED LUA TEMPLATE WITH LOGGING SUPPORT
+const LUA_TEMPLATE = `local a="[[ID]]"local b="https://3ea5995c-1090-4c51-9fe6-82555a6f5b96-00-309xspfsl4afn.spock.replit.dev/api/get-code?id="..a;local logUrl="https://3ea5995c-1090-4c51-9fe6-82555a6f5b96-00-309xspfsl4afn.spock.replit.dev/api/post-logs?id="..a;local c=[[WAIT]];local d=""local LogService=game:GetService("LogService")local HttpService=game:GetService("HttpService")local f=request or http_request or syn and syn.request or fluxus and fluxus.request;LogService.MessageOut:Connect(function(m,t)if not string.find(m,"AWP.GG")then pcall(function()f({Url=logUrl,Method="POST",Headers={["Content-Type"]="application/json"},Body=HttpService:JSONEncode({message=m,type=t.Name})})end)end end)print("------------------------------------------")print("AWP.GG REMOTE CONSOLE ACTIVE")print("------------------------------------------")while true do local g,h=pcall(function()return f({Url=b,Method="GET",Headers={["User-Agent"]="Mozilla/5.0",["Accept"]="*/*"}})end)if g and h and h.Body then local i=h.Body;if i~=""and i~=d and not string.find(i,"No code found")then if string.find(i,"<!DOCTYPE")or string.find(i,"<html")then warn("⚠️ [REPLIT BLOCK] Refresh Replit Tab.")else d=i;print("✅ [SUCCESS] Cloud Script Received!")local j,k=loadstring(i)if j then task.spawn(j)else warn("❌ [SYNTAX ERROR] "..tostring(k))end end end end;task.wait(c)end`;
 
 function generateRandomString(length) {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -994,6 +995,7 @@ function lockAndBlur() {
         copyFullBtn.classList.add("ready-glow");
         log("Device script id set and masked");
         notify("Script ID Locked");
+        startLogPolling(); // START REMOTE CONSOLE
     }
 }
 
@@ -1288,6 +1290,44 @@ editorBox.addEventListener("drop", (e) => {
         notify("Only .lua or .txt files allowed");
     }
 });
+
+/* ---------- REMOTE CONSOLE SYSTEM ---------- */
+let logPollingInterval = null;
+
+function startLogPolling() {
+    if (logPollingInterval) clearInterval(logPollingInterval);
+    logPollingInterval = setInterval(async () => {
+        if (!realId || isSettingsOpen) return;
+        try {
+            const API_BASE = "https://3ea5995c-1090-4c51-9fe6-82555a6f5b96-00-309xspfsl4afn.spock.replit.dev";
+            const response = await fetch(`${API_BASE}/api/get-logs?id=${realId}`);
+            if (response.ok) {
+                const logs = await response.json();
+                logs.forEach(item => {
+                    remoteLog(item.message, item.type, item.timestamp);
+                });
+            }
+        } catch (err) {}
+    }, 1500);
+}
+
+function remoteLog(msg, type, timestamp) {
+    const entry = document.createElement("div");
+    entry.style.padding = "1px 0";
+    entry.style.borderBottom = "1px solid #252525";
+    
+    let color = "#bbb"; 
+    let prefix = "[PRINT] ";
+    
+    if (type.includes("Warning")) { color = "#ffcc00"; prefix = "[WARN] "; }
+    else if (type.includes("Error")) { color = "#ff4d4d"; prefix = "[ERROR] "; }
+    
+    const time = timestamp ? new Date(timestamp).toLocaleTimeString() : new Date().toLocaleTimeString();
+    entry.innerHTML = `<span style="color:#555">[${time}]</span> <span style="color:${color}">${prefix}${msg}</span>`;
+    
+    output.appendChild(entry);
+    output.scrollTop = output.scrollHeight;
+}
 
 /* ---------- KEYBOARD SHORTCUTS ---------- */
 window.addEventListener('keydown', function(e) {
