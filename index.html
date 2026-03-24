@@ -288,6 +288,16 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
   font-size:14px;
 }
 
+/* SECONDARY EDITOR FOR SPLIT VIEW */
+#editorBox2 {
+    display: none;
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    font-size: 14px;
+    border-left: 2px solid #333;
+}
+
 /* CUSTOM MINIMAP STYLES */
 #customMinimap {
     width: 80px;
@@ -378,6 +388,21 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
   white-space:pre-wrap;
 }
 
+/* STATUS BAR STYLING */
+.status-bar {
+    background: #111;
+    border-top: 1px solid #333;
+    padding: 2px 10px;
+    font-size: 11px;
+    color: #888;
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    user-select: none;
+}
+
+.status-bar span b { color: #ccc; }
+
 /* Sidebar Updated with Transitions */
 .sidebar {
   width:250px;
@@ -425,8 +450,7 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
     min-width: 200px;
     transform: translateX(120%);
     transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    display: flex;
-    align-items: center;
+    display: flex; align-items: center;
     justify-content: space-between;
 }
 
@@ -468,6 +492,7 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
 <!-- Tab Context Menu -->
 <div id="tabContextMenu" class="context-menu">
     <div class="context-menu-item" id="ctxDuplicate">Duplicate</div>
+    <div class="context-menu-item" id="ctxSplitRight">Split Right</div>
     <div class="context-menu-item" id="ctxCopyPath">Copy Path</div>
     <div class="context-menu-item" id="ctxCloseOthers">Close Others</div>
 </div>
@@ -588,8 +613,9 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
     </div>
 
     <div class="left">
-      <div class="editor-container">
+      <div class="editor-container" id="editorContainer">
         <div id="editorBox">-- Welcome to AWP.GG!</div>
+        <div id="editorBox2"></div>
         <!-- MINIMAP CONTAINER -->
         <div id="customMinimap">
             <div id="minimapContent"></div>
@@ -606,6 +632,12 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
       </div>
 
       <div id="output" class="output"></div>
+      
+      <div class="status-bar">
+          <span>Ln <b><span id="statLine">1</span></b>, Col <b><span id="statCol">1</span></b></span>
+          <span>Chars: <b><span id="statChars">0</span></b></span>
+          <span style="margin-left:auto">Replit API: <b id="apiStatus" style="color:#ff4d4d">Offline</b></span>
+      </div>
     </div>
 
     <div class="sidebar">
@@ -665,6 +697,7 @@ sizeBtn.onclick = () => {
         sizeBtn.title = "Small Window";
     }
     editor.resize();
+    if(editor2) editor2.resize();
     updateMinimap();
 };
 
@@ -686,6 +719,7 @@ minBtn.onclick = () => {
         }
     }
     editor.resize();
+    if(editor2) editor2.resize();
     updateMinimap();
 };
 
@@ -717,6 +751,17 @@ editor.setOptions({
     useSoftTabs: true,
     tabSize: 4
 });
+
+/* SECOND EDITOR FOR SPLIT VIEW */
+let editor2 = null;
+function initEditor2() {
+    if (editor2) return;
+    editor2 = ace.edit("editorBox2");
+    editor2.setTheme(editor.getTheme());
+    editor2.session.setMode("ace/mode/lua");
+    editor2.setOptions(editor.getOptions());
+    editor2.setReadOnly(true); // Default split view to read only for viewing
+}
 
 /* LUAU & ROBLOX AUTOCOMPLETE SUPPORT */
 const robloxKeywords = [
@@ -750,6 +795,37 @@ ace.require("ace/ext/language_tools").addCompleter({
         }));
     }
 });
+
+/* ---------- STATUS BAR LOGIC ---------- */
+const statLine = document.getElementById("statLine");
+const statCol = document.getElementById("statCol");
+const statChars = document.getElementById("statChars");
+const apiStatus = document.getElementById("apiStatus");
+
+function updateStatusBar() {
+    const cursor = editor.getCursorPosition();
+    statLine.textContent = cursor.row + 1;
+    statCol.textContent = cursor.column + 1;
+    statChars.textContent = editor.getValue().length;
+}
+
+editor.selection.on("changeCursor", updateStatusBar);
+editor.on("change", updateStatusBar);
+
+async function checkApiConnection() {
+    const API_BASE = "https://3ea5995c-1090-4c51-9fe6-82555a6f5b96-00-309xspfsl4afn.spock.replit.dev";
+    try {
+        // Just pinging the endpoint with a dummy ID to check if server is responsive
+        const res = await fetch(`${API_BASE}/api/get-code?id=ping`, { method: "GET", mode: 'no-cors' });
+        apiStatus.textContent = "Online";
+        apiStatus.style.color = "#4dff4d";
+    } catch (e) {
+        apiStatus.textContent = "Offline";
+        apiStatus.style.color = "#ff4d4d";
+    }
+}
+setInterval(checkApiConnection, 10000);
+checkApiConnection();
 
 /* ---------- MINIMAP LOGIC ---------- */
 const mContent = document.getElementById("minimapContent");
@@ -791,6 +867,7 @@ function syncMinimapViewport() {
 minimapToggle.onchange = () => {
     customMinimap.style.display = minimapToggle.checked ? "block" : "none";
     editor.resize();
+    if(editor2) editor2.resize();
     updateMinimap();
     notify(`Minimap ${minimapToggle.checked ? 'Enabled' : 'Disabled'}`);
 };
@@ -829,7 +906,10 @@ const sidebar = document.querySelector(".sidebar");
 const sidebarToggle = document.getElementById("sidebarToggle");
 sidebarToggle.onclick = () => {
     sidebar.classList.toggle("collapsed");
-    setTimeout(() => editor.resize(), 300); // Sync editor size after animation
+    setTimeout(() => {
+        editor.resize();
+        if(editor2) editor2.resize();
+    }, 300); // Sync editor size after animation
 };
 
 /* THEME ENGINE LOGIC */
@@ -837,6 +917,7 @@ const themeSelect = document.getElementById("themeSelect");
 ace.config.set("basePath", "https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.2/");
 themeSelect.onchange = () => {
     editor.setTheme(themeSelect.value);
+    if(editor2) editor2.setTheme(themeSelect.value);
     log(`Theme changed to ${themeSelect.value.split('/').pop()}`);
     notify(`Theme Updated`);
 };
@@ -963,6 +1044,24 @@ document.getElementById("ctxDuplicate").onclick = () => {
     notify("Tab Duplicated");
 };
 
+document.getElementById("ctxSplitRight").onclick = () => {
+    if(!ctxTargetTabId) return;
+    const editorBox2 = document.getElementById("editorBox2");
+    if (editorBox2.style.display === "block" && currentSplitTab === ctxTargetTabId) {
+        editorBox2.style.display = "none";
+        currentSplitTab = null;
+        notify("Split View Closed");
+    } else {
+        initEditor2();
+        editorBox2.style.display = "block";
+        editor2.setValue(tabsData[ctxTargetTabId] || "", -1);
+        currentSplitTab = ctxTargetTabId;
+        notify(`Splitting ${getTabName(ctxTargetTabId)} to Right`);
+    }
+    editor.resize();
+    editor2.resize();
+};
+
 document.getElementById("ctxCopyPath").onclick = () => {
     if(!ctxTargetTabId) return;
     const name = getTabName(ctxTargetTabId);
@@ -989,6 +1088,7 @@ document.getElementById("ctxCloseOthers").onclick = () => {
 const tabsContainer = document.getElementById("tabs");
 let tabsData = {};
 let currentTab = null;
+let currentSplitTab = null;
 let tabCount = 0;
 let draggedTabElement = null; // Reference for reordering
 
@@ -1092,6 +1192,7 @@ function switchTab(id, el){
   document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
   el.classList.add("active");
   editor.setValue(tabsData[id] || "", -1);
+  updateStatusBar();
   updateMinimap();
 }
 
@@ -1099,6 +1200,11 @@ function deleteTab(id, el){
   if(Object.keys(tabsData).length<=1) return;
   delete tabsData[id];
   el.remove();
+  if(currentSplitTab === id) {
+      document.getElementById("editorBox2").style.display = "none";
+      currentSplitTab = null;
+      editor.resize();
+  }
   const next = tabsContainer.querySelector(".tab");
   if(next) switchTab(next.dataset.tab,next);
 }
@@ -1121,7 +1227,7 @@ document.getElementById("executeBtn").onclick = async () => {
     } catch (err) { log("Connection Error."); notify("Connection Failed"); }
 };
 
-document.getElementById("clearBtn").onclick = ()=>{ editor.setValue(""); log(`Cleared current tab`); notify("Editor Cleared"); updateMinimap(); };
+document.getElementById("clearBtn").onclick = ()=>{ editor.setValue(""); log(`Cleared current tab`); notify("Editor Cleared"); updateStatusBar(); updateMinimap(); };
 document.getElementById("newTabBtn").onclick = ()=>createTab();
 document.getElementById("saveBtn").onclick = ()=>{
   const ext = extensionSelect.value || ".lua";
@@ -1138,7 +1244,7 @@ document.getElementById("openBtn").onclick = ()=>{
     const file=e.target.files[0];
     if(!file) return;
     const reader=new FileReader();
-    reader.onload = ev=>{ createTab(file.name.replace(/\..+/,"")); editor.setValue(ev.target.result, -1); notify(`Opened ${file.name}`); updateMinimap(); };
+    reader.onload = ev=>{ createTab(file.name.replace(/\..+/,"")); editor.setValue(ev.target.result, -1); notify(`Opened ${file.name}`); updateStatusBar(); updateMinimap(); };
     reader.readAsText(file);
   };
   input.click();
@@ -1164,6 +1270,7 @@ editorBox.addEventListener("drop", (e) => {
             editor.setValue(ev.target.result, -1);
             notify(`Dropped & Opened ${file.name}`);
             log(`Opened file via drop: ${file.name}`);
+            updateStatusBar();
             updateMinimap();
         };
         reader.readAsText(file);
