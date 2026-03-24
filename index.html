@@ -563,6 +563,18 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
                 </select>
             </div>
         </div>
+
+        <!-- EXPORT SETTINGS -->
+        <div class="step-label">Export Settings</div>
+        <div class="generator-section">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <label style="font-size: 13px; color: #ccc;">Default Extension:</label>
+                <select id="extensionSelect" class="clean-input" style="width: 100px; padding: 5px 10px; appearance: auto;">
+                    <option value=".lua">.lua</option>
+                    <option value=".txt">.txt</option>
+                </select>
+            </div>
+        </div>
     </div>
 
     <div class="left">
@@ -756,6 +768,7 @@ const genDisplay = document.getElementById("genDisplay");
 const copyBaseBtn = document.getElementById("copyBaseBtn");
 const copyFullBtn = document.getElementById("copyFullBtn");
 const scriptCooldownInput = document.getElementById("scriptCooldownInput");
+const extensionSelect = document.getElementById("extensionSelect");
 
 /* SIDEBAR TOGGLE LOGIC */
 const sidebar = document.querySelector(".sidebar");
@@ -1057,7 +1070,8 @@ document.getElementById("executeBtn").onclick = async () => {
 document.getElementById("clearBtn").onclick = ()=>{ editor.setValue(""); log(`Cleared current tab`); notify("Editor Cleared"); updateMinimap(); };
 document.getElementById("newTabBtn").onclick = ()=>createTab();
 document.getElementById("saveBtn").onclick = ()=>{
-  const name = getTabName(currentTab) + ".lua";
+  const ext = extensionSelect.value || ".lua";
+  const name = getTabName(currentTab) + ext;
   const blob = new Blob([editor.getValue()]);
   const a=document.createElement("a");
   a.href=URL.createObjectURL(blob); a.download=name; a.click();
