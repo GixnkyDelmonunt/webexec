@@ -556,7 +556,7 @@ body { font-family:Consolas, monospace; background:#1e1e1e; color:white; overflo
             </div>
             <div style="display: flex; align-items: center; gap: 10px; margin-top: 5px;">
                 <label style="font-size: 12px; color: #888;">Script Cooldown (s):</label>
-                <input type="number" id="scriptCooldownInput" class="clean-input" value="2" step="0.5" style="width: 70px; padding: 5px 10px;">
+                <input type="number" id="scriptCooldownInput" class="clean-input" value="0.4" step="0.5" style="width: 70px; padding: 5px 10px;">
             </div>
             <small style="color:#666; display:block; margin-top:10px; font-size:11px;">Paste the script with your ID into your Roblox executor.</small>
         </div>
@@ -960,7 +960,7 @@ copyGenBtn.onclick = () => {
 };
 
 copyBaseBtn.onclick = () => {
-    const waitVal = scriptCooldownInput.value || "2";
+    const waitVal = scriptCooldownInput.value || "0.4";
     const script = LUA_TEMPLATE.replace("[[ID]]", "YOUR_ID_HERE").replace("[[WAIT]]", waitVal);
     navigator.clipboard.writeText(script);
     log("Base script copied!");
@@ -969,7 +969,7 @@ copyBaseBtn.onclick = () => {
 
 copyFullBtn.onclick = () => {
     if(!realId) { notify("Error: Set Script ID first!"); return; }
-    const waitVal = scriptCooldownInput.value || "2";
+    const waitVal = scriptCooldownInput.value || "0.4";
     const script = LUA_TEMPLATE.replace("[[ID]]", realId).replace("[[WAIT]]", waitVal);
     navigator.clipboard.writeText(script);
     log("Script with ID copied!");
