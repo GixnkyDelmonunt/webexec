@@ -875,6 +875,13 @@ minimapToggle.onchange = () => {
 editor.on("change", updateMinimap);
 editor.getSession().on("changeScrollTop", syncMinimapViewport);
 
+// Live Split Sync
+editor.on("change", () => {
+    if (editor2 && currentSplitTab === currentTab) {
+        editor2.session.setValue(editor.getValue());
+    }
+});
+
 /* ---------- LOG SYSTEM ---------- */
 const output = document.getElementById("output");
 function log(msg){
@@ -1046,6 +1053,9 @@ document.getElementById("ctxDuplicate").onclick = () => {
 
 document.getElementById("ctxSplitRight").onclick = () => {
     if(!ctxTargetTabId) return;
+    // Ensure current tab data is fresh before splitting
+    if (currentTab === ctxTargetTabId) tabsData[ctxTargetTabId] = editor.getValue();
+
     const editorBox2 = document.getElementById("editorBox2");
     if (editorBox2.style.display === "block" && currentSplitTab === ctxTargetTabId) {
         editorBox2.style.display = "none";
