@@ -764,24 +764,139 @@ function initEditor2() {
 }
 
 /* LUAU & ROBLOX AUTOCOMPLETE SUPPORT */
+/* FULL LUAU & ROBLOX AUTOCOMPLETE SUPPORT */
+
 const robloxKeywords = [
-    "game", "workspace", "script", "task", "Enum", "Instance", "shared", "_G",
-    "delay", "elapsedTime", "spawn", "tick", "time", "wait", "warn", "print", "error",
-    "getfenv", "setfenv", "getmetatable", "setmetatable", "loadstring", "next", "pairs",
-    "ipairs", "pcall", "xpcall", "rawequal", "rawget", "rawset", "select", "tonumber",
-    "tostring", "type", "unpack", "math", "string", "table", "coroutine", "debug", "utf8",
-    "bit32", "os", "PluginManager", "Stats", "UserSettings", "RaycastParams", "Random",
-    "OverlapParams", "NumberRange", "NumberSequence", "NumberSequenceKeypoint", "PhysicalProperties",
-    "Rect", "Region3", "Region3int16", "TweenInfo", "UDim", "UDim2", "Vector2", "Vector2int16",
-    "Vector3", "Vector3int16", "Axes", "BrickColor", "CFrame", "Color3", "ColorSequence",
-    "ColorSequenceKeypoint", "Faces", "Font", "GetChildren", "GetDescendants", "FindFirstChild",
-    "FindFirstChildOfClass", "FindFirstChildWhichIsA", "WaitForChild", "Clone", "Destroy", "IsA",
-    "IsAncestorOf", "IsDescendantOf", "ClearAllChildren", "GetAttribute", "SetAttribute",
-    "GetAttributes", "Connect", "Wait", "Fire", "GetService", "Kick", "FindFirstAncestor",
-    "FindFirstAncestorOfClass", "FindFirstAncestorWhichIsA", "PivotTo", "GetPivot",
-    "SetPrimaryPartCFrame", "GetPrimaryPartCFrame", "AddTag", "RemoveTag", "HasTag", "GetTags",
-    "GetAttributeChangedSignal", "GetPropertyChangedSignal", "BindToClose", "BindAction", "UnbindAction",
-    "defer", "cancel", "Ray", "continue"
+
+/* GLOBALS */
+"game","workspace","script","shared","_G",
+"plugin","settings","UserSettings","Stats",
+
+/* TASK / TIME */
+"task","task.wait","task.spawn","task.delay","task.defer","task.cancel",
+"wait","spawn","delay","tick","time","elapsedTime",
+
+/* OUTPUT */
+"print","warn","error",
+
+/* LUA BASE */
+"assert","collectgarbage","error","getmetatable","setmetatable",
+"next","pairs","ipairs","pcall","xpcall",
+"rawequal","rawget","rawset","select",
+"tonumber","tostring","type",
+"table","string","math","coroutine","utf8","os","debug","bit32",
+
+/* DEPRECATED / LIMITED */
+"getfenv","setfenv","loadstring","unpack",
+
+/* CORE TYPES */
+"Instance","Enum",
+"Vector2","Vector2int16",
+"Vector3","Vector3int16",
+"CFrame",
+"Color3","BrickColor",
+"UDim","UDim2",
+"Rect",
+"Region3","Region3int16",
+"Axes","Faces",
+"Ray","RaycastParams","OverlapParams",
+"TweenInfo",
+"NumberRange","NumberSequence","NumberSequenceKeypoint",
+"ColorSequence","ColorSequenceKeypoint",
+"PhysicalProperties",
+"Random","Font",
+
+/* INSTANCE CREATION */
+"Instance.new",
+
+/* SERVICES */
+"GetService",
+"Workspace","Players","Lighting","ReplicatedStorage","ServerStorage",
+"StarterGui","StarterPack","StarterPlayer",
+"Teams","SoundService","Chat","LocalizationService",
+"RunService","TweenService","UserInputService",
+"ContextActionService","CollectionService",
+"TeleportService","HttpService","MarketplaceService",
+"PathfindingService","Debris","InsertService",
+"DataStoreService","MemoryStoreService","MessagingService",
+"GroupService","BadgeService","GuiService","VRService",
+"HapticService","ProximityPromptService","TextChatService",
+
+/* INSTANCE METHODS */
+"GetChildren","GetDescendants",
+"FindFirstChild","FindFirstChildOfClass","FindFirstChildWhichIsA",
+"WaitForChild",
+"FindFirstAncestor","FindFirstAncestorOfClass","FindFirstAncestorWhichIsA",
+
+"Clone","Destroy","ClearAllChildren",
+
+"IsA","IsAncestorOf","IsDescendantOf",
+
+"GetAttribute","SetAttribute","GetAttributes",
+"GetAttributeChangedSignal",
+"GetPropertyChangedSignal",
+
+"PivotTo","GetPivot",
+"SetPrimaryPartCFrame","GetPrimaryPartCFrame",
+
+/* EVENTS */
+"Connect","Disconnect","Wait","Fire","FireServer","FireClient","FireAllClients","InvokeServer","InvokeClient",
+
+/* PLAYER */
+"Players","LocalPlayer","Character","CharacterAdded",
+"Kick","LoadCharacter","GetMouse",
+
+/* COLLECTION SERVICE */
+"AddTag","RemoveTag","HasTag","GetTags","GetTagged",
+
+/* GUI */
+"ScreenGui","Frame","TextLabel","TextButton","ImageLabel","ImageButton",
+"UIListLayout","UIGridLayout","UICorner","UIStroke","UIPadding",
+"ScrollingFrame","CanvasGroup",
+
+/* INPUT */
+"UserInputService","InputBegan","InputEnded","InputChanged",
+"IsKeyDown","GetMouseLocation",
+
+/* RUNSERVICE */
+"RunService","Heartbeat","RenderStepped","Stepped","BindToRenderStep","UnbindFromRenderStep",
+
+/* PHYSICS / RAYCAST */
+"Raycast","Blockcast","Spherecast","Shapecast",
+
+/* HUMANOID */
+"Humanoid","WalkSpeed","JumpPower","Health","MaxHealth",
+"Move","MoveTo","Sit","Jump",
+
+/* CAMERA */
+"CurrentCamera","CameraType","CameraSubject","FieldOfView",
+
+/* TOOL */
+"Tool","Activated","Equipped","Unequipped",
+
+/* REMOTES */
+"RemoteEvent","RemoteFunction",
+
+/* DATASTORE */
+"GetDataStore","SetAsync","GetAsync","UpdateAsync","RemoveAsync",
+
+/* HTTP */
+"HttpService","JSONEncode","JSONDecode","GetAsync","PostAsync",
+
+/* MATH EXTRA */
+"math.abs","math.clamp","math.floor","math.ceil","math.random","math.sqrt","math.pi",
+
+/* STRING EXTRA */
+"string.lower","string.upper","string.find","string.sub","string.gsub","string.format",
+
+/* TABLE EXTRA */
+"table.insert","table.remove","table.sort","table.unpack","table.concat","table.clear",
+
+/* COROUTINE */
+"coroutine.create","coroutine.resume","coroutine.wrap","coroutine.yield",
+
+/* FLOW (LUAU) */
+"continue","break","return","if","else","elseif","for","while","repeat","until","function","local","nil","true","false"
 ];
 
 ace.require("ace/ext/language_tools").addCompleter({
